@@ -1148,7 +1148,8 @@ _kiwi.view.Application = Backbone.View.extend({
 
         // Change the theme when the config is changed
         _kiwi.global.settings.on('change:theme', this.updateTheme, this);
-        this.updateTheme(getQueryVariable('theme'));
+        //this.updateTheme(getQueryVariable('theme'));
+	this.updateTheme("basic");
 
         _kiwi.global.settings.on('change:channel_list_style', this.setTabLayout, this);
         this.setTabLayout(_kiwi.global.settings.get('channel_list_style'));
