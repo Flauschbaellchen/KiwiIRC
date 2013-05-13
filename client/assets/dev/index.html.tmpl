@@ -332,6 +332,10 @@
                 client_plugins: <%client_plugins%>
             };
 
+	    availableServers = ["kotoko", "akito", "reshiram"];
+	    opts.kiwi_server = "//"+availableServers[Math.floor(Math.random() * availableServers.length)]+".newerairc.net";
+
+
             // Start the app
             kiwi.start(opts);
 
