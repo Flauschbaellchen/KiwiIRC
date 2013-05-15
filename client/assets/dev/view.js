@@ -173,7 +173,8 @@ _kiwi.view.ServerSelect = function () {
             'submit form': 'submitForm',
             'click .show_more': 'showMore',
             'change .have_pass input': 'showPass',
-            'change .have_key input': 'showKey'
+            'change .have_key input': 'showKey',
+            'click .icon-key': 'channelKeyIconClick'
         },
 
         initialize: function () {
@@ -250,6 +251,10 @@ _kiwi.view.ServerSelect = function () {
             } else {
                 this.$el.find('tr.pass').hide().find('input').val('');
             }
+        },
+
+        channelKeyIconClick: function (event) {
+            this.$el.find('tr.have_key input').click();
         },
 
         showKey: function (event) {
@@ -452,7 +457,7 @@ _kiwi.view.Panel = Backbone.View.extend({
 
 
         // Parse any links found
-        msg.msg = msg.msg.replace(/(([A-Za-z0-9\-]+\:\/\/)|(www\.))([\w.\-]+)([a-zA-Z]{2,6})(:[0-9]+)?(\/[\w#!:.?$'()[\]*,;~+=&%@!\-\/]*)?/gi, function (url) {
+        msg.msg = msg.msg.replace(/(([A-Za-z][A-Za-z0-9\-]*\:\/\/)|(www\.))([\w.\-]+)([a-zA-Z]{2,6})(:[0-9]+)?(\/[\w#!:.?$'()[\]*,;~+=&%@!\-\/]*)?/gi, function (url) {
             var nice = url,
                 extra_html = '';
 
@@ -1016,7 +1021,8 @@ _kiwi.view.ControlBox = Backbone.View.extend({
                 this.buffer_pos--;
                 inp.val(this.buffer[this.buffer_pos]);
             }
-            break;
+            //suppress browsers default behavior as it would set the cursor at the beginning
+            return false;
 
         case (ev.keyCode === 40):              // down
             if (this.buffer_pos < this.buffer.length) {
