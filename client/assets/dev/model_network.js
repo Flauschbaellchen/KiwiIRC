@@ -262,6 +262,7 @@
 
         if (event.kicked === this.get('nick')) {
             members.reset([]);
+            panel.addMsg('', '== You were kicked out of ' + event.channel + ': ' + part_options.message, 'msg action kick highlight');
         }
     }
 
