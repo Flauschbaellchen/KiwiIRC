@@ -54,6 +54,7 @@
             //this.gateway.on('all', function() {console.log('ALL', this.get('connection_id'), arguments);});
 
             this.gateway.on('connect', onConnect, this);
+            this.gateway.on('disconnect', onDisconnect, this);
 
             this.gateway.on('nick', function(event) {
                 if (event.nick === this.get('nick')) {
@@ -129,6 +130,14 @@
             return panels;
         }
     });
+
+
+    
+    function onDisconnect(event) {
+        $.each(this.panels.models, function (index, panel) {
+            panel.addMsg('', 'Disconnected from the IRC network', 'action quit');
+        });
+    }
 
 
 
@@ -358,6 +367,10 @@
         }
 
         panel.addMsg('[' + (event.nick||'') + ']', event.msg);
+
+        // Show this notice to the active panel if it didn't have a set target
+        if (panel === this.panels.server)
+            _kiwi.app.panels().active.addMsg('[' + (event.nick||'') + ']', event.msg);
     }
 
 
@@ -561,6 +574,8 @@
             logon_date = formatDate(logon_date);
 
             panel.addMsg(event.nick, 'idle for ' + idle_time + ', signed on ' + logon_date, 'whois');
+        } else if (event.away_reason) {
+            panel.addMsg(event.nick, 'Away: ' + event.away_reason, 'whois');
         } else {
             panel.addMsg(event.nick, 'idle for ' + idle_time, 'whois');
         }

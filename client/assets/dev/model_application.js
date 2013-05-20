@@ -109,21 +109,21 @@ _kiwi.model.Application = function () {
             // Applets panel list
             this.applet_panels = new _kiwi.model.PanelList();
             this.applet_panels.view.$el.addClass('panellist applets');
-            this.view.$el.find('#tabs').append(this.applet_panels.view.$el);
+            this.view.$el.find('.tabs').append(this.applet_panels.view.$el);
 
             /**
              * Set the UI components up
              */
-            this.controlbox = new _kiwi.view.ControlBox({el: $('#controlbox')[0]});
+            this.controlbox = new _kiwi.view.ControlBox({el: $('#kiwi .controlbox')[0]});
             this.bindControllboxCommands(this.controlbox);
 
-            this.topicbar = new _kiwi.view.TopicBar({el: $('#topic')[0]});
+            this.topicbar = new _kiwi.view.TopicBar({el: this.view.$el.find('.topic')[0]});
 
-            new _kiwi.view.AppToolbar({el: $('#toolbar .app_tools')[0]});
+            new _kiwi.view.AppToolbar({el: _kiwi.app.view.$el.find('.toolbar .app_tools')[0]});
 
-            this.message = new _kiwi.view.StatusMessage({el: $('#status_message')[0]});
+            this.message = new _kiwi.view.StatusMessage({el: this.view.$el.find('.status_message')[0]});
 
-            this.resize_handle = new _kiwi.view.ResizeHandler({el: $('#memberlists_resize_handle')[0]});
+            this.resize_handle = new _kiwi.view.ResizeHandler({el: this.view.$el.find('.memberlists_resize_handle')[0]});
 
             // Rejigg the UI sizes
             this.view.doLayout();

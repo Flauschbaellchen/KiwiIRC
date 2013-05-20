@@ -1,5 +1,21 @@
 /*jslint white:true, regexp: true, nomen: true, devel: true, undef: true, browser: true, continue: true, sloppy: true, forin: true, newcap: true, plusplus: true, maxerr: 50, indent: 4 */
 /*global kiwi */
+_kiwi.view.Member = Backbone.View.extend({
+    tagName: "li",
+    initialize: function (options) {
+        this.model.bind('change', this.render, this);
+        this.render();
+    },
+    render: function () {
+        var $this = this.$el,
+            prefix_css_class = (this.model.get('modes') || []).join(' ');
+
+        $this.addClass('mode ' + prefix_css_class);
+        $this.html('<a class="nick"><span class="prefix">' + this.model.get("prefix") + '</span>' + this.model.get("nick") + '</a>');
+        $this.data('member', this.model);
+        return this;
+    }
+});
 
 _kiwi.view.MemberList = Backbone.View.extend({
     tagName: "ul",
@@ -8,23 +24,21 @@ _kiwi.view.MemberList = Backbone.View.extend({
     },
     initialize: function (options) {
         this.model.bind('all', this.render, this);
-        $(this.el).appendTo('#memberlists');
+        $(this.el).appendTo('#kiwi .memberlists');
     },
     render: function () {
-        var $this = $(this.el);
+        var $this = this.$el;
         $this.empty();
         this.model.forEach(function (member) {
-            var prefix_css_class = (member.get('modes') || []).join(' ');
-            $('<li class="mode ' + prefix_css_class + '"><a class="nick"><span class="prefix">' + member.get("prefix") + '</span>' + member.get("nick") + '</a></li>')
-                .appendTo($this)
-                .data('member', member);
+            $this.append(member.view.el);
         });
+        return this;
     },
     nickClick: function (event) {
         var $target = $(event.currentTarget).parent('li'),
             member = $target.data('member'),
             userbox;
-        
+
         event.stopPropagation();
 
         // If the userbox already exists here, hide it
@@ -64,7 +78,7 @@ _kiwi.view.MemberList = Backbone.View.extend({
         }).call(this);
     },
     show: function () {
-        $('#memberlists').children().removeClass('active');
+        $('#kiwi .memberlists').children().removeClass('active');
         $(this.el).addClass('active');
     }
 });
@@ -379,8 +393,25 @@ _kiwi.view.ServerSelect = function () {
             }
         },
 
-        showError: function (event) {
-            this.setStatus('Error connecting', 'error');
+        showError: function (error_reason) {
+            var err_text = 'Error Connecting';
+
+            if (error_reason) {
+                switch (error_reason) {
+                case 'ENOTFOUND':
+                    err_text = 'Server not found';
+                    break;
+
+                case 'ECONNREFUSED':
+                    err_text += ' (Connection refused)';
+                    break;
+
+                default:
+                    err_text += ' (' + error_reason + ')';
+                }
+            }
+
+            this.setStatus(err_text, 'error');
             $('button', this.$el).attr('disabled', null);
             this.show();
         }
@@ -414,7 +445,7 @@ _kiwi.view.Panel = Backbone.View.extend({
         if (options.container) {
             this.$container = $(options.container);
         } else {
-            this.$container = $('#panels .container1');
+            this.$container = $('#kiwi .panels .container1');
         }
 
         this.$el.appendTo(this.$container);
@@ -624,11 +655,11 @@ _kiwi.view.Panel = Backbone.View.extend({
         // Show this panels memberlist
         var members = this.model.get("members");
         if (members) {
-            $('#memberlists').removeClass('disabled');
+            $('#kiwi .memberlists').removeClass('disabled');
             members.view.show();
         } else {
             // Memberlist not found for this panel, hide any active ones
-            $('#memberlists').addClass('disabled').children().removeClass('active');
+            $('#kiwi .memberlists').addClass('disabled').children().removeClass('active');
         }
 
         // Remove any alerts and activity counters for this panel
@@ -744,7 +775,7 @@ _kiwi.view.NetworkTabs = Backbone.View.extend({
         this.model.on('add', this.networkAdded, this);
         this.model.on('remove', this.networkRemoved, this);
 
-        this.$el.appendTo($('#kiwi #tabs'));
+        this.$el.appendTo($('#kiwi .tabs'));
     },
 
     networkAdded: function(network) {
@@ -1033,7 +1064,7 @@ _kiwi.view.ControlBox = Backbone.View.extend({
 
         case (ev.keyCode === 219 && meta):            // [ + meta
             // Find all the tab elements and get the index of the active tab
-            var $tabs = $('#kiwi #tabs').find('li[class!=connection]');
+            var $tabs = $('#kiwi .tabs').find('li[class!=connection]');
             var cur_tab_ind = (function() {
                 for (var idx=0; idx<$tabs.length; idx++){
                     if ($($tabs[idx]).hasClass('active'))
@@ -1053,7 +1084,7 @@ _kiwi.view.ControlBox = Backbone.View.extend({
 
         case (ev.keyCode === 221 && meta):            // ] + meta
             // Find all the tab elements and get the index of the active tab
-            var $tabs = $('#kiwi #tabs').find('li[class!=connection]');
+            var $tabs = $('#kiwi .tabs').find('li[class!=connection]');
             var cur_tab_ind = (function() {
                 for (var idx=0; idx<$tabs.length; idx++){
                     if ($($tabs[idx]).hasClass('active'))
@@ -1222,8 +1253,8 @@ _kiwi.view.StatusMessage = Backbone.View.extend({
         opt.type = opt.type || '';
         opt.timeout = opt.timeout || 5000;
 
-        this.$el.text(text).attr('class', opt.type);
-        this.$el.slideDown($.proxy(_kiwi.app.view.doLayout, this));
+        this.$el.text(text).addClass(opt.type);
+        this.$el.slideDown($.proxy(_kiwi.app.view.doLayout, _kiwi.app.view));
 
         if (opt.timeout) this.doTimeout(opt.timeout);
     },
@@ -1234,14 +1265,14 @@ _kiwi.view.StatusMessage = Backbone.View.extend({
         opt.type = opt.type || '';
         opt.timeout = opt.timeout || 5000;
 
-        this.$el.html(text).attr('class', opt.type);
-        this.$el.slideDown(_kiwi.app.view.doLayout);
+        this.$el.html(text).addClass(opt.type);
+        this.$el.slideDown($.proxy(_kiwi.app.view.doLayout, _kiwi.app.view));
 
         if (opt.timeout) this.doTimeout(opt.timeout);
     },
 
     hide: function () {
-        this.$el.slideUp($.proxy(_kiwi.app.view.doLayout, this));
+        this.$el.slideUp($.proxy(_kiwi.app.view.doLayout, _kiwi.app.view));
     },
 
     doTimeout: function (length) {
@@ -1279,7 +1310,7 @@ _kiwi.view.ResizeHandler = Backbone.View.extend({
         if (!this.dragging) return;
 
         this.$el.css('left', event.clientX - (this.$el.outerWidth(true) / 2));
-        $('#memberlists').css('width', this.$el.parent().width() - (this.$el.position().left + this.$el.outerWidth()));
+        $('#kiwi .memberlists').css('width', this.$el.parent().width() - (this.$el.position().left + this.$el.outerWidth()));
         _kiwi.app.view.doLayout();
     }
 });
@@ -1306,8 +1337,8 @@ _kiwi.view.Application = Backbone.View.extend({
         var that = this;
 
         $(window).resize(function() { that.doLayout.apply(that); });
-        $('#toolbar').resize(function() { that.doLayout.apply(that); });
-        $('#controlbox').resize(function() { that.doLayout.apply(that); });
+        this.$el.find('.toolbar').resize(function() { that.doLayout.apply(that); });
+        $('#kiwi .controlbox').resize(function() { that.doLayout.apply(that); });
 
         // Change the theme when the config is changed
         _kiwi.global.settings.on('change:theme', this.updateTheme, this);
@@ -1397,17 +1428,17 @@ _kiwi.view.Application = Backbone.View.extend({
             return;
         }
 
-        $('#controlbox .inp').focus();
+        $('#kiwi .controlbox .inp').focus();
     },
 
 
     doLayout: function () {
         var el_kiwi = this.$el;
-        var el_panels = $('#kiwi #panels');
-        var el_memberlists = $('#kiwi #memberlists');
-        var el_toolbar = $('#kiwi #toolbar');
-        var el_controlbox = $('#kiwi #controlbox');
-        var el_resize_handle = $('#kiwi #memberlists_resize_handle');
+        var el_panels = $('#kiwi .panels');
+        var el_memberlists = $('#kiwi .memberlists');
+        var el_toolbar = this.$el.find('.toolbar');
+        var el_controlbox = $('#kiwi .controlbox');
+        var el_resize_handle = $('#kiwi .memberlists_resize_handle');
 
         var css_heights = {
             top: el_toolbar.outerHeight(true),
@@ -1431,7 +1462,7 @@ _kiwi.view.Application = Backbone.View.extend({
 
         // If we have channel tabs on the side, adjust the height
         if (el_kiwi.hasClass('chanlist_treeview')) {
-            $('#tabs', el_kiwi).css(css_heights);
+            this.$el.find('.tabs', el_kiwi).css(css_heights);
         }
 
         // Determine if we have a narrow window (mobile/tablet/or even small desktop window)
@@ -1454,7 +1485,7 @@ _kiwi.view.Application = Backbone.View.extend({
             el_resize_handle.css('left', el_panels.outerWidth(true));
         }
 
-        var input_wrap_width = parseInt($('#kiwi #controlbox .input_tools').outerWidth());
+        var input_wrap_width = parseInt($('#kiwi .controlbox .input_tools').outerWidth());
         el_controlbox.find('.input_wrap').css('right', input_wrap_width + 7);
     },
 
@@ -1534,11 +1565,11 @@ _kiwi.view.Application = Backbone.View.extend({
         var that = this;
 
         if (!instant) {
-            $('#toolbar').slideUp({queue: false, duration: 400, step: $.proxy(this.doLayout, this)});
-            $('#controlbox').slideUp({queue: false, duration: 400, step: $.proxy(this.doLayout, this)});
+            this.$el.find('.toolbar').slideUp({queue: false, duration: 400, step: $.proxy(this.doLayout, this)});
+            $('#kiwi .controlbox').slideUp({queue: false, duration: 400, step: $.proxy(this.doLayout, this)});
         } else {
-            $('#toolbar').slideUp(0);
-            $('#controlbox').slideUp(0);
+            this.$el.find('.toolbar').slideUp(0);
+            $('#kiwi .controlbox').slideUp(0);
             this.doLayout();
         }
     },
@@ -1547,11 +1578,11 @@ _kiwi.view.Application = Backbone.View.extend({
         var that = this;
 
         if (!instant) {
-            $('#toolbar').slideDown({queue: false, duration: 400, step: $.proxy(this.doLayout, this)});
-            $('#controlbox').slideDown({queue: false, duration: 400, step: $.proxy(this.doLayout, this)});
+            this.$el.find('.toolbar').slideDown({queue: false, duration: 400, step: $.proxy(this.doLayout, this)});
+            $('#kiwi .controlbox').slideDown({queue: false, duration: 400, step: $.proxy(this.doLayout, this)});
         } else {
-            $('#toolbar').slideDown(0);
-            $('#controlbox').slideDown(0);
+            this.$el.find('.toolbar').slideDown(0);
+            $('#kiwi .controlbox').slideDown(0);
             this.doLayout();
         }
     },
