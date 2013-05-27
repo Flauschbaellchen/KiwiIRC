@@ -82,6 +82,7 @@
             this.gateway.on('whois', onWhois, this);
             this.gateway.on('away', onAway, this);
             this.gateway.on('list_start', onListStart, this);
+            this.gateway.on('irc_error', onIrcError, this);
         },
 
 
@@ -128,6 +129,22 @@
             });
 
             return panels;
+        },
+
+
+        /**
+         * Join all the open channels we have open
+         * Reconnecting to a network would typically call this.
+         */
+        rejoinAllChannels: function() {
+            var that = this;
+
+            this.panels.forEach(function(panel) {
+                if (!panel.isChannel())
+                    return;
+
+                that.gateway.join(panel.get('name'));
+            });
         }
     });
 
@@ -146,6 +163,9 @@
 
         // Update our nick with what the network gave us
         this.set('nick', event.nick);
+
+        // If this is a re-connection then we may have some channels to re-join
+        this.rejoinAllChannels();
 
         // Auto joining channels
         if (this.auto_join && this.auto_join.channel) {
@@ -353,23 +373,38 @@
 
 
     function onNotice(event) {
-        var panel;
+        var panel, channel_name;
 
         // An ignored user? don't do anything with it
-        if (event.nick && _kiwi.gateway.isNickIgnored(event.nick)) {
+        if (!event.from_server && event.nick && _kiwi.gateway.isNickIgnored(event.nick)) {
             return;
         }
 
         // Find a panel for the destination(channel) or who its from
-        panel = this.panels.getByName(event.target) || this.panels.getByName(event.nick);
-        if (!panel) {
+        if (!event.from_server) {
+            panel = this.panels.getByName(event.target) || this.panels.getByName(event.nick);
+
+            // Forward ChanServ messages to its associated channel
+            if (event.nick.toLowerCase() == 'chanserv' && event.msg.charAt(0) == '[') {
+                channel_name = /\[([^ \]]+)\]/gi.exec(event.msg);
+                if (channel_name && channel_name[1]) {
+                    channel_name = channel_name[1];
+
+                    panel = this.panels.getByName(channel_name);
+                }
+            }
+
+            if (!panel) {
+                panel = this.panels.server;
+            }
+        } else {
             panel = this.panels.server;
         }
 
         panel.addMsg('[' + (event.nick||'') + ']', event.msg);
 
         // Show this notice to the active panel if it didn't have a set target
-        if (panel === this.panels.server)
+        if (!event.from_server && panel === this.panels.server)
             _kiwi.app.panels().active.addMsg('[' + (event.nick||'') + ']', event.msg);
     }
 
@@ -606,7 +641,7 @@
     function onIrcError(event) {
         var panel, tmp;
 
-        if (event.channel !== undefined && !(panel = _kiwi.app.panels.getByName(event.channel))) {
+        if (event.channel !== undefined && !(panel = this.panels.getByName(event.channel))) {
             panel = this.panels.server;
         }
 
