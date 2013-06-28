@@ -2,11 +2,11 @@ var net             = require('net'),
     tls             = require('tls'),
     util            = require('util'),
     _               = require('lodash'),
-    EventEmitter2   = require('eventemitter2').EventEmitter2,
     EventBinder     = require('./eventbinder.js'),
     IrcServer       = require('./server.js'),
     IrcChannel      = require('./channel.js'),
     IrcUser         = require('./user.js'),
+    EE              = require('../ee.js'),
     Socks;
 
 
@@ -23,7 +23,7 @@ if (version_values[1] >= 10) {
 var IrcConnection = function (hostname, port, ssl, nick, user, pass, state) {
     var that = this;
 
-    EventEmitter2.call(this,{
+    EE.call(this,{
         wildcard: true,
         delimiter: ' '
     });
@@ -95,7 +95,7 @@ var IrcConnection = function (hostname, port, ssl, nick, user, pass, state) {
             that.connect();
         });
 };
-util.inherits(IrcConnection, EventEmitter2);
+util.inherits(IrcConnection, EE);
 
 module.exports.IrcConnection = IrcConnection;
 
@@ -219,6 +219,8 @@ IrcConnection.prototype.end = function (data, callback) {
  * Clean up this IrcConnection instance and any sockets
  */
 IrcConnection.prototype.dispose = function () {
+    var that = this;
+
     _.each(this.irc_users, function (user) {
         user.dispose();
     });
@@ -233,8 +235,20 @@ IrcConnection.prototype.dispose = function () {
 
     EventBinder.unbindIrcEvents('', this.irc_events, this);
 
-    this.disposeSocket();
-    this.removeAllListeners();
+    // If we're still connected, wait until the socket is closed before disposing
+    // so that all the events are still correctly triggered
+    if (this.socket && this.connected) {
+        this.socket.once('close', function() {
+            that.disposeSocket();
+            that.removeAllListeners();
+        });
+
+        this.socket.end();
+
+    } else {
+        this.disposeSocket();
+        this.removeAllListeners();
+    }
 };
 
 
@@ -392,7 +406,13 @@ function findWebIrc(connect_data) {
     if (ip_as_username && ip_as_username.indexOf(this.irc_host.hostname) > -1) {
         // Get a hex value of the clients IP
         this.username = this.user.address.split('.').map(function(i, idx){
-            return parseInt(i, 10).toString(16);
+            var hex = parseInt(i, 10).toString(16);
+
+            // Pad out the hex value if it's a single char
+            if (hex.length === 1)
+                hex = '0' + hex;
+
+            return hex;
         }).join('');
 
     }

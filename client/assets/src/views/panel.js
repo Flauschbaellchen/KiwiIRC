@@ -45,7 +45,10 @@ _kiwi.view.Panel = Backbone.View.extend({
 
     newMsg: function (msg) {
         var re, line_msg, $this = this.$el,
-            nick_colour_hex, nick_hex, is_highlight, msg_css_classes = '';
+            nick_colour_hex, nick_hex, is_highlight, msg_css_classes = '',
+            time_difference,
+            sb = this.model.get('scrollback'),
+            prev_msg = sb[sb.length-2];
 
         // Nick highlight detecting
         if ((new RegExp('(^|\\W)(' + escapeRegex(_kiwi.app.connections.active_connection.get('nick')) + ')(\\W|$)', 'i')).test(msg.msg)) {
@@ -82,7 +85,7 @@ _kiwi.view.Panel = Backbone.View.extend({
             extra_html = _kiwi.view.MediaMessage.buildHtml(url);
 
             // Make the link clickable
-            return '<a class="link_ext" target="_blank" rel="nofollow" href="' + url + '">' + nice + '</a> ' + extra_html;
+            return '<a class="link_ext" target="_blank" rel="nofollow" href="' + url + '">' + nice + '</a>' + extra_html;
         });
 
 
@@ -110,6 +113,14 @@ _kiwi.view.Panel = Backbone.View.extend({
                 nick_hex += char.charCodeAt(0).toString(16);
             });
             msg_css_classes += ' nick_' + nick_hex;
+        }
+
+        if (prev_msg) {
+            // Time difference between this message and the last (in minutes)
+            time_difference = (msg.date.getTime() - prev_msg.date.getTime())/1000/60;
+            if (prev_msg.nick === msg.nick && time_difference < 1) {
+                msg_css_classes += ' repeated_nick';
+            }
         }
 
         // Build up and add the line

@@ -411,6 +411,7 @@ _kiwi.model.Application = function () {
                 '/j': '/join $1+',
                 '/q': '/query $1+',
                 '/w': '/whois $1+',
+                '/raw': '/quote $1+',
 
                 // Op related aliases
                 '/op': '/quote mode $channel +o $1+',
@@ -457,6 +458,8 @@ _kiwi.model.Application = function () {
             controlbox.on('command:server', serverCommand);
 
             controlbox.on('command:whois', whoisCommand);
+
+            controlbox.on('command:whowas', whowasCommand);
 
 
             controlbox.on('command:css', function (ev) {
@@ -604,7 +607,7 @@ _kiwi.model.Application = function () {
             panels = that.connections.active_connection.createAndJoinChannels(channel_names);
 
             // Show the last channel if we have one
-            if (panels)
+            if (panels.length)
                 panels[panels.length - 1].view.show();
         }
 
@@ -770,6 +773,20 @@ _kiwi.model.Application = function () {
 
             if (nick)
                 _kiwi.app.connections.active_connection.gateway.raw('WHOIS ' + nick + ' ' + nick);
+        }
+
+
+        function whowasCommand (ev) {
+            var nick;
+
+            if (ev.params[0]) {
+                nick = ev.params[0];
+            } else if (_kiwi.app.panels().active.isQuery()) {
+                nick = _kiwi.app.panels().active.get('name');
+            }
+
+            if (nick)
+                _kiwi.app.connections.active_connection.gateway.raw('WHOWAS ' + nick);
         }
 
 

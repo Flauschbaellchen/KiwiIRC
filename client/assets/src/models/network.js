@@ -80,6 +80,7 @@
             this.gateway.on('userlist_end', onUserlistEnd, this);
             this.gateway.on('mode', onMode, this);
             this.gateway.on('whois', onWhois, this);
+            this.gateway.on('whowas', onWhowas, this);
             this.gateway.on('away', onAway, this);
             this.gateway.on('list_start', onListStart, this);
             this.gateway.on('irc_error', onIrcError, this);
@@ -279,6 +280,8 @@
         part_options.type = 'kick';
         part_options.by = event.nick;
         part_options.message = event.message || '';
+        part_options.current_user_kicked = (event.kicked == this.get('nick'))
+        part_options.current_user_initiated = (event.nick == this.get('nick'))
 
         channel = this.panels.getByName(event.channel);
         if (!channel) return;
@@ -289,9 +292,10 @@
         user = members.getByNick(event.kicked);
         if (!user) return;
 
+
         members.remove(user, part_options);
 
-        if (event.kicked === this.get('nick')) {
+        if (part_options.current_user_kicked) {
             members.reset([]);
             channel.addMsg('', '== You were kicked out of ' + event.channel + ': ' + part_options.message, 'msg action kick highlight');
         }
@@ -602,7 +606,7 @@
         } else if (event.chans) {
             panel.addMsg(event.nick, 'Channels: ' + event.chans, 'whois');
         } else if (event.irc_server) {
-            panel.addMsg(event.nick, 'Connected to server: ' + event.irc_server, 'whois');
+            panel.addMsg(event.nick, 'Connected to server: ' + event.irc_server + ' ' + event.server_info, 'whois');
         } else if (event.msg) {
             panel.addMsg(event.nick, event.msg, 'whois');
         } else if (event.logon) {
@@ -618,6 +622,19 @@
         }
     }
 
+    function onWhowas(event) {
+        var panel;
+
+        if (event.end)
+            return;
+
+        panel = _kiwi.app.panels().active;
+        if (event.host) {
+            panel.addMsg(event.nick, event.nick + ' [' + event.nick + ((event.ident)? '!' + event.ident : '') + '@' + event.host + '] * ' + event.real_name, 'whois');
+        } else {
+            panel.addMsg(event.nick, 'No such nick', 'whois');
+        }
+    }
 
 
     function onAway(event) {
@@ -678,12 +695,12 @@
             break;
         case 'nickname_in_use':
             this.panels.server.addMsg(' ', '== The nickname ' + event.nick + ' is already in use. Please select a new nickname', 'status');
-            if (this.panels.server !== thia.panels.active) {
+            if (this.panels.server !== this.panels.active) {
                 _kiwi.app.message.text('The nickname "' + event.nick + '" is already in use. Please select a new nickname');
             }
 
             // Only show the nickchange component if the controlbox is open
-            if (that.controlbox.$el.css('display') !== 'none') {
+            if (_kiwi.app.controlbox.$el.css('display') !== 'none') {
                 (new _kiwi.view.NickChangeBox()).render();
             }
 

@@ -127,7 +127,11 @@ _kiwi.view.ControlBox = Backbone.View.extend({
             $next_tab.click();
             return false;
 
-        case (ev.keyCode === 9):                     // tab
+        case (ev.keyCode === 9     //Check if ONLY tab is pressed
+            && !ev.shiftKey        //(user could be using some browser 
+            && !ev.altKey          //keyboard shortcut)
+            && !ev.metaKey 
+            && !ev.ctrlKey):                     
             this.tabcomplete.active = true;
             if (_.isEqual(this.tabcomplete.data, [])) {
                 // Get possible autocompletions
@@ -236,7 +240,7 @@ _kiwi.view.ControlBox = Backbone.View.extend({
         command_raw = this.preprocessor.process(command_raw);
 
         // Extract the command and parameters
-        params = command_raw.split(' ');
+        params = command_raw.split(/\s/);
         if (params[0][0] === '/') {
             command = params[0].substr(1).toLowerCase();
             params = params.splice(1, params.length - 1);
