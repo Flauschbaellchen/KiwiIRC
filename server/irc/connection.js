@@ -1,6 +1,7 @@
 var net             = require('net'),
     tls             = require('tls'),
     util            = require('util'),
+    dns             = require('dns'),
     _               = require('lodash'),
     EventBinder     = require('./eventbinder.js'),
     IrcServer       = require('./server.js'),
@@ -122,63 +123,111 @@ IrcConnection.prototype.applyIrcEvents = function () {
  */
 IrcConnection.prototype.connect = function () {
     var that = this;
-    var socks;
 
     // The socket connect event to listener for
     var socket_connect_event_name = 'connect';
 
+    // The destination address
+    var dest_addr = this.socks ?
+        this.socks.host :
+        this.irc_host.hostname;
 
     // Make sure we don't already have an open connection
     this.disposeSocket();
 
-    // Are we connecting through a SOCKS proxy?
-    if (this.socks) {
-        this.socket = Socks.connect({
-            host: this.irc_host.hostname,
-            port: this.irc_host.port,
-            ssl: this.ssl,
-            rejectUnauthorized: global.config.reject_unauthorised_certificates
-        }, {host: this.socks.host,
-            port: this.socks.port,
-            user: this.socks.user,
-            pass: this.socks.pass
+    // Get the IP family for the dest_addr (either socks or IRCd destination)
+    getConnectionFamily(dest_addr, function (err, family, host) {
+        var outgoing;
+
+        // Decide which net. interface to make the connection through
+        if (global.config.outgoing_address) {
+            if ((family === 'IPv6') && (global.config.outgoing_address.IPv6)) {
+                outgoing = global.config.outgoing_address.IPv6;
+            } else {
+                outgoing = global.config.outgoing_address.IPv4 || '0.0.0.0';
+
+                // We don't have an IPv6 interface but dest_addr may still resolve to
+                // an IPv4 address. Reset `host` and try connecting anyway, letting it
+                // fail if an IPv4 resolved address is not found
+                host = dest_addr;
+            }
+
+        } else {
+            // No config was found so use the default
+            outgoing = '0.0.0.0';
+        }
+
+        // Are we connecting through a SOCKS proxy?
+        if (this.socks) {
+            that.socket = Socks.connect({
+                host: host,
+                port: that.irc_host.port,
+                ssl: that.ssl,
+                rejectUnauthorized: global.config.reject_unauthorised_certificates
+            }, {host: that.socks.host,
+                port: that.socks.port,
+                user: that.socks.user,
+                pass: that.socks.pass,
+                localAddress: outgoing
+            });
+
+        } else {
+            // No socks connection, connect directly to the IRCd
+
+            if (that.ssl) {
+                that.socket = tls.connect({
+                    host: host,
+                    port: that.irc_host.port,
+                    rejectUnauthorized: global.config.reject_unauthorised_certificates,
+                    localAddress: outgoing
+                });
+
+                socket_connect_event_name = 'secureConnect';
+
+            } else {
+                that.socket = net.connect({
+                    host: host,
+                    port: that.irc_host.port,
+                    localAddress: outgoing
+                });
+            }
+        }
+
+        // Apply the socket listeners
+        that.socket.on(socket_connect_event_name, function () {
+            that.connected = true;
+
+            // Make note of the port numbers for any identd lookups
+            // Nodejs < 0.9.6 has no socket.localPort so check this first
+            if (this.localPort) {
+                global.clients.port_pairs[this.localPort.toString() + '_' + this.remotePort.toString()] = that;
+            }
+
+            socketConnectHandler.call(that);
         });
 
-    } else if (this.ssl) {
-        this.socket = tls.connect({
-            host: this.irc_host.hostname,
-            port: this.irc_host.port,
-            rejectUnauthorized: global.config.reject_unauthorised_certificates
+        that.socket.on('error', function (event) {
+            that.emit('error', event);
         });
 
-        socket_connect_event_name = 'secureConnect';
-
-    } else {
-        this.socket = net.connect({
-            host: this.irc_host.hostname,
-            port: this.irc_host.port
+        that.socket.on('data', function () {
+            parse.apply(that, arguments);
         });
-    }
 
-    this.socket.on(socket_connect_event_name, function () {
-        that.connected = true;
-        socketConnectHandler.call(that);
-    });
+        that.socket.on('close', function (had_error) {
+            that.connected = false;
 
-    this.socket.on('error', function (event) {
-        that.emit('error', event);
-    });
+            // Remove this socket form the identd lookup
+            // Nodejs < 0.9.6 has no socket.localPort so check this first
+            if (this.localPort) {
+                delete global.clients.port_pairs[this.localPort.toString() + '_' + this.remotePort.toString()];
+            }
 
-    this.socket.on('data', function () {
-        parse.apply(that, arguments);
-    });
+            that.emit('close');
 
-    this.socket.on('close', function (had_error) {
-        that.connected = false;
-        that.emit('close');
-
-        // Close the whole socket down
-        that.disposeSocket();
+            // Close the whole socket down
+            that.disposeSocket();
+        });
     });
 };
 
@@ -284,6 +333,30 @@ IrcConnection.prototype.setEncoding = function (encoding) {
         return false;
     }
 };
+
+function getConnectionFamily(host, callback) {
+    if (net.isIP(host)) {
+        if (net.isIPv4(host)) {
+            setImmediate(callback, null, 'IPv4', host);
+        } else {
+            setImmediate(callback, null, 'IPv6', host);
+        }
+    } else {
+        dns.resolve6(host, function (err, addresses) {
+            if (!err) {
+                callback(null, 'IPv6', addresses[0]);
+            } else {
+                dns.resolve4(host, function (err, addresses) {
+                    if (!err) {
+                        callback(null, 'IPv4',addresses[0]);
+                    } else {
+                        callback(err);
+                    }
+                });
+            }
+        });
+    }
+}
 
 
 function onChannelJoin(event) {

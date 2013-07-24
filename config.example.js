@@ -33,6 +33,11 @@ conf.servers.push({
 //    ssl_cert: "cert.pem"
 //});
 
+// Network interface for outgoing connections
+conf.outgoing_address = {
+    IPv4: '0.0.0.0'
+    //IPv6: '::'
+};
 
 
 // Do we want to enable the built in Identd server?
@@ -175,6 +180,7 @@ conf.client = {
     port:    6697,
     ssl:     true,
     channel: '#kiwiirc',
+    channel_key: '',
     nick:    'kiwi_?',
     settings: {
         theme: 'relaxed',
@@ -192,6 +198,7 @@ conf.client = {
 //conf.restrict_server_port = 6667;
 //conf.restrict_server_ssl = false;
 //conf.restrict_server_channel = "#kiwiirc";
+//conf.restrict_server_channel_key = "";
 //conf.restrict_server_password = "";
 //conf.restrict_server_nick = "kiwi_";
 
