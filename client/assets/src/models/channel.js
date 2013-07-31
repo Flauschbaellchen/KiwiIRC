@@ -17,7 +17,6 @@ _kiwi.model.Channel = _kiwi.model.Panel.extend({
         members = this.get("members");
         members.channel = this;
         members.bind("add", function (member) {
-            return;
             var show_message = _kiwi.global.settings.get('show_joins_parts');
             if (show_message === false) {
                 return;
@@ -27,7 +26,6 @@ _kiwi.model.Channel = _kiwi.model.Panel.extend({
         }, this);
 
         members.bind("remove", function (member, members, options) {
-            return;
             var show_message = _kiwi.global.settings.get('show_joins_parts');
             var msg = (options.message) ? '(' + options.message + ')' : '';
 
