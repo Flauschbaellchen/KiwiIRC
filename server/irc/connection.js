@@ -168,6 +168,15 @@ IrcConnection.prototype.connect = function () {
                 host = dest_addr;
             }
 
+            // If we have an array of interfaces, select a random one
+            if (typeof outgoing !== 'string' && outgoing.length) {
+                outgoing = outgoing[Math.floor(Math.random() * outgoing.length)];
+            }
+
+            // Make sure we have a valid interface address
+            if (typeof outgoing !== 'string')
+                outgoing = '0.0.0.0';
+
         } else {
             // No config was found so use the default
             outgoing = '0.0.0.0';
@@ -263,10 +272,17 @@ IrcConnection.prototype.clientEvent = function (event_name, data, callback) {
 
 /**
  * Write a line of data to the IRCd
+ * @param data The line of data to be sent
+ * @param force Write the data now, ignoring any write queue
  */
-IrcConnection.prototype.write = function (data, callback) {
+IrcConnection.prototype.write = function (data, force) {
     //ENCODE string to encoding of the server
     encoded_buffer = iconv.encode(data + '\r\n', this.encoding);
+
+    if (force) {
+        this.socket.write(encoded_buffer);
+        return;
+    }
 
     this.write_buffer.push(encoded_buffer);
 
@@ -325,11 +341,14 @@ IrcConnection.prototype.flushWriteBuffer = function () {
 
 
 /**
- * Close the connection to the IRCd after sending one last line
+ * Close the connection to the IRCd after forcing one last line
  */
 IrcConnection.prototype.end = function (data, callback) {
+    if (!this.socket)
+        return;
+
     if (data)
-        this.write(data);
+        this.write(data, true);
 
     this.socket.end();
 };
@@ -409,9 +428,9 @@ IrcConnection.prototype.setEncoding = function (encoding) {
 function getConnectionFamily(host, callback) {
     if (net.isIP(host)) {
         if (net.isIPv4(host)) {
-            setImmediate(callback, null, 'IPv4', host);
+            callback(null, 'IPv4', host);
         } else {
-            setImmediate(callback, null, 'IPv6', host);
+            callback(null, 'IPv6', host);
         }
     } else {
         dns.resolve6(host, function resolve6Cb(err, addresses) {
