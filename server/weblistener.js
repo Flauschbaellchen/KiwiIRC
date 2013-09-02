@@ -1,17 +1,18 @@
-var ws          = require('socket.io'),
-    events      = require('events'),
-    http        = require('http'),
-    https       = require('https'),
-    util        = require('util'),
-    fs          = require('fs'),
-    dns         = require('dns'),
-    url         = require('url'),
-    _           = require('lodash'),
-    spdy        = require('spdy'),
-    ipaddr      = require('ipaddr.js'),
-    Client      = require('./client.js').Client,
-    HttpHandler = require('./httphandler.js').HttpHandler,
-    rehash      = require('./rehash.js');
+var engine       = require('engine.io'),
+    WebsocketRpc = require('./websocketrpc.js');
+    events       = require('events'),
+    http         = require('http'),
+    https        = require('https'),
+    util         = require('util'),
+    fs           = require('fs'),
+    dns          = require('dns'),
+    url          = require('url'),
+    _            = require('lodash'),
+    spdy         = require('spdy'),
+    ipaddr       = require('ipaddr.js'),
+    Client       = require('./client.js').Client,
+    HttpHandler  = require('./httphandler.js').HttpHandler,
+    rehash       = require('./rehash.js');
 
 
 
@@ -25,21 +26,14 @@ rehash.on('rehashed', function (files) {
 var http_handler;
 
 
-var WebListener = function (web_config, transports) {
-    var hs, opts, ws_opts,
+var WebListener = module.exports = function (web_config, transports) {
+    var hs, opts,
         that = this;
 
 
     events.EventEmitter.call(this);
 
     http_handler = new HttpHandler(web_config);
-
-    // Standard options for the socket.io connections
-    ws_opts = {
-        'log level': 0,
-        'log colors': 0
-    };
-
 
     if (web_config.ssl) {
         opts = {
@@ -60,8 +54,6 @@ var WebListener = function (web_config, transports) {
 
         hs = spdy.createServer(opts, handleHttpRequest);
 
-        // Start socket.io listening on this weblistener
-        this.ws = ws.listen(hs, _.extend({ssl: true}, ws_opts));
         hs.listen(web_config.port, web_config.address, function () {
             that.emit('listening');
         });
@@ -70,8 +62,6 @@ var WebListener = function (web_config, transports) {
         // Start some plain-text server up
         hs = http.createServer(handleHttpRequest);
 
-        // Start socket.io listening on this weblistener
-        this.ws = ws.listen(hs, _.extend({ssl: false}, ws_opts));
         hs.listen(web_config.port, web_config.address, function () {
             that.emit('listening');
         });
@@ -81,29 +71,35 @@ var WebListener = function (web_config, transports) {
         that.emit('error', err);
     });
 
-    this.ws.enable('browser client minification');
-    this.ws.enable('browser client etag');
-    this.ws.set('transports', transports);
-    this.ws.set('resource', (global.config.http_base_path || '') + '/transport');
+    this.ws = engine.attach(hs, {
+        transports: ['websocket', 'polling', 'flashsocket'],
+        path: (global.config.http_base_path || '') + '/transport'
+    });
 
-    this.ws.of('/kiwi').authorization(authoriseConnection)
-        .on('connection', function () {
-            newConnection.apply(that, arguments);
-        }
-    );
-    this.ws.of('/kiwi').on('error', console.log);
+    this.ws.on('connection', function(socket) {
+        initialiseSocket(socket, function(err, authorised) {
+            var client;
+
+            if (!authorised) {
+                socket.close();
+                return;
+            }
+
+            client = new Client(socket);
+            client.on('dispose', function () {
+                that.emit('client_dispose', this);
+            });
+
+            that.emit('connection', client);
+        });
+    });
 };
 util.inherits(WebListener, events.EventEmitter);
 
 
 
 function handleHttpRequest(request, response) {
-    var uri = url.parse(request.url, true);
-
-    // If this isn't a socket.io request, pass it onto the http handler
-    if (uri.pathname.substr(0, 10) !== '/socket.io') {
-        http_handler.serve(request, response);
-    }
+    http_handler.serve(request, response);
 }
 
 function rangeCheck(addr, range) {
@@ -123,11 +119,16 @@ function rangeCheck(addr, range) {
  * Get the reverse DNS entry for this connection.
  * Used later on for webirc, etc functionality
  */
-function authoriseConnection(handshakeData, callback) {
-    var address = handshakeData.address.address;
+function initialiseSocket(socket, callback) {
+    var request = socket.request,
+        address = request.connection.remoteAddress;
+
+    // Key/val data stored to the socket to be read later on
+    // May also be synced to a redis DB to lookup clients
+    socket.meta = {};
 
     // If a forwarded-for header is found, switch the source address
-    if (handshakeData.headers[global.config.http_proxy_ip_header || 'x-forwarded-for']) {
+    if (request.headers[global.config.http_proxy_ip_header || 'x-forwarded-for']) {
         // Check we're connecting from a whitelisted proxy
         if (!global.config.http_proxies || !rangeCheck(address, global.config.http_proxies)) {
             console.log('Unlisted proxy:', address);
@@ -136,10 +137,10 @@ function authoriseConnection(handshakeData, callback) {
         }
 
         // We're sent from a whitelisted proxy, replace the hosts
-        address = handshakeData.headers['x-forwarded-for'];
+        address = request.headers[global.config.http_proxy_ip_header || 'x-forwarded-for'];
     }
 
-    handshakeData.real_address = address;
+    socket.meta.real_address = address;
 
     // If enabled, don't go over the connection limit
     if (global.config.max_client_conns && global.config.max_client_conns > 0) {
@@ -152,31 +153,16 @@ function authoriseConnection(handshakeData, callback) {
     try {
         dns.reverse(address, function (err, domains) {
             if (err || domains.length === 0) {
-                handshakeData.revdns = address;
+                socket.meta.revdns = address;
             } else {
-                handshakeData.revdns = _.first(domains) || address;
+                socket.meta.revdns = _.first(domains) || address;
             }
 
             // All is well, authorise the connection
             callback(null, true);
         });
     } catch (err) {
-        handshakeData.revdns = address;
+        socket.meta.revdns = address;
         callback(null, true);
     }
 }
-
-function newConnection(websocket) {
-    var client, that = this;
-    client = new Client(websocket);
-    client.on('dispose', function () {
-        that.emit('client_dispose', this);
-    });
-    this.emit('connection', client);
-}
-
-
-
-
-
-module.exports = WebListener;

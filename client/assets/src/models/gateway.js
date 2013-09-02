@@ -138,22 +138,10 @@ _kiwi.model.Gateway = function () {
             transport_path;
 
         this.disconnect_requested = true;
-        this.socket.disconnect();
+        this.socket.close();
 
-        // To get around the allow-origin issues for requests, completely reload the
-        // transport source from the new server
-        window.io = null;
-
-        // Path to get the socket.io transport code
-        transport_path = _kiwi.app.kiwi_server + _kiwi.app.get('base_path') + '/transport/socket.io.js?ts='+(new Date().getTime());
-        $script(transport_path, function() {
-            if (!window.io) {
-                return callback('err_kiwi_server_not_found');
-            }
-
-            that.set('kiwi_server', _kiwi.app.kiwi_server + '/kiwi');
-            that.connect(callback);
-        });
+        this.socket = null;
+        this.connect(callback);
     };
 
 
@@ -163,26 +151,14 @@ _kiwi.model.Gateway = function () {
     *   @param  {Function}  callback    A callback function to be invoked once Kiwi's server has connected to the IRC server
     */
     this.connect = function (callback) {
-        var resource;
-
-        // Work out the resource URL for socket.io
-        if (_kiwi.app.get('base_path').substr(0, 1) === '/') {
-            resource = _kiwi.app.get('base_path');
-            resource = resource.substr(1, resource.length-1);
-            resource += '/transport';
-        } else {
-            resource = _kiwi.app.get('base_path') + '/transport';
-        }
-
-        this.socket = io.connect(this.get('kiwi_server'), {
-            'resource': resource,
-
-            'try multiple transports': true,
-            'connect timeout': 3000,
-            'max reconnection attempts': 7,
-            'reconnection delay': 2000,
-            'sync disconnect on unload': false
+        this.socket = new EngineioTools.ReconnectingSocket(this.get('kiwi_server'), {
+            path: _kiwi.app.get('base_path') + '/transport',
+            reconnect_max_attempts: 5,
+            reconnect_delay: 2000
         });
+
+        this.rpc = new EngineioTools.Rpc(this.socket);
+
         this.socket.on('connect_failed', function (reason) {
             this.socket.disconnect();
             this.trigger("connect_fail", {reason: reason});
@@ -204,40 +180,38 @@ _kiwi.model.Gateway = function () {
          * A `connect` event is sent from the kiwi server once connected to the
          * IRCD and the nick has been accepted.
          */
-        this.socket.on('connect', function () {
+        this.socket.on('open', function () {
             // Reset the disconnect_requested flag
             that.disconnect_requested = false;
+
+            console.log("_kiwi.gateway.socket.on('open')");
 
             callback && callback();
         });
 
-        this.socket.on('too_many_connections', function () {
+        this.rpc.on('too_many_connections', function () {
             that.trigger("connect_fail", {reason: 'too_many_connections'});
         });
 
-        this.socket.on('irc', function (data, callback) {
+        this.rpc.on('irc', function (response, data) {
             that.parse(data.command, data.data);
         });
 
-        this.socket.on('kiwi', function (data, callback) {
+        this.rpc.on('kiwi', function (response, data) {
             that.parseKiwi(data.command, data.data);
         });
 
-        this.socket.on('disconnect', function () {
-            that.trigger("disconnect", {});
-            console.log("_kiwi.gateway.socket.on('disconnect')");
-        });
-
         this.socket.on('close', function () {
+            that.trigger("disconnect", {});
             console.log("_kiwi.gateway.socket.on('close')");
         });
 
-        this.socket.on('reconnecting', function (reconnectionDelay, reconnectionAttempts) {
+        this.socket.on('reconnecting', function (status) {
             console.log("_kiwi.gateway.socket.on('reconnecting')");
-            that.trigger("reconnecting", {delay: reconnectionDelay, attempts: reconnectionAttempts});
+            that.trigger("reconnecting", {delay: status.delay, attempts: status.attempts});
         });
 
-        this.socket.on('reconnect_failed', function () {
+        this.socket.on('reconnecting_failed', function () {
             console.log("_kiwi.gateway.socket.on('reconnect_failed')");
         });
     };
@@ -290,11 +264,13 @@ _kiwi.model.Gateway = function () {
             password:   connection_info.password
         };
 
+        connection_info.options = connection_info.options || {};
+
         // A few optional parameters
         if (connection_info.options.encoding)
             server_info.encoding = connection_info.options.encoding;
 
-        this.socket.emit('kiwi', server_info, function (err, server_num) {
+        this.rpc.call('kiwi', server_info, function (err, server_num) {
             if (!err) {
                 callback_fn && callback_fn(err, server_num);
 
@@ -306,7 +282,8 @@ _kiwi.model.Gateway = function () {
 
 
     this.isConnected = function () {
-        return this.socket.socket.connected;
+        // TODO: Check this. Might want to use .readyState
+        return this.socket;
     };
 
 
@@ -400,7 +377,7 @@ _kiwi.model.Gateway = function () {
             server: connection_id,
             data: JSON.stringify(data)
         };
-        this.socket.emit('irc', data_buffer, callback);
+        this.rpc.call('irc', data_buffer, callback);
     };
 
     /**
