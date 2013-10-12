@@ -26,7 +26,7 @@ rehash.on('rehashed', function (files) {
 var http_handler;
 
 
-var WebListener = module.exports = function (web_config, transports) {
+var WebListener = module.exports = function (web_config) {
     var hs, opts,
         that = this;
 
@@ -91,6 +91,9 @@ var WebListener = module.exports = function (web_config, transports) {
             });
 
             that.emit('connection', client);
+
+            // Call any modules listening for new clients
+            global.modules.emit('client created', {client: client});
         });
     });
 };

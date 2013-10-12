@@ -133,6 +133,7 @@
             this.gateway.on('away', onAway, this);
             this.gateway.on('list_start', onListStart, this);
             this.gateway.on('irc_error', onIrcError, this);
+            this.gateway.on('unknown_command', onUnknownCommand, this);
         },
 
 
@@ -219,7 +220,7 @@
 
         // Auto joining channels
         if (this.auto_join && this.auto_join.channel) {
-            panels = this.createAndJoinChannels(this.auto_join.channel + ' ' + (this.auto_join.channel_key || ''));
+            panels = this.createAndJoinChannels(this.auto_join.channel + ' ' + (this.auto_join.key || ''));
 
             // Show the last channel if we have one
             if (panels)
@@ -354,7 +355,7 @@
 
     function onMsg(event) {
         var panel,
-            is_pm = (event.channel == this.get('nick'));
+            is_pm = (event.channel.toLowerCase() == this.get('nick').toLowerCase());
 
         // An ignored user? don't do anything with it
         if (_kiwi.gateway.isNickIgnored(event.nick)) {
@@ -410,7 +411,7 @@
 
         // Reply to a TIME ctcp
         if (event.msg.toUpperCase() === 'TIME') {
-            this.gateway.ctcp(null, false, event.type, event.nick, (new Date()).toString());
+            this.gateway.ctcp(false, event.type, event.nick, (new Date()).toString());
         }
     }
 
@@ -467,7 +468,7 @@
 
     function onAction(event) {
         var panel,
-            is_pm = (event.channel == this.get('nick'));
+            is_pm = (event.channel.toLowerCase() == this.get('nick').toLowerCase());
 
         // An ignored user? don't do anything with it
         if (_kiwi.gateway.isNickIgnored(event.nick)) {
@@ -726,6 +727,9 @@
             panel.addMsg(' ', '== ' + _kiwi.global.i18n.translate('client_models_network_channel_inviteonly').fetch(event.channel), 'status');
             _kiwi.app.message.text(_kiwi.global.i18n.translate('client_models_network_channel_inviteonly').fetch(event.channel));
             break;
+        case 'user_on_channel':
+            panel.addMsg(' ', '== ' + event.nick + ' is already on this channel');
+            break;
         case 'channel_is_full':
             panel.addMsg(' ', '== ' + _kiwi.global.i18n.translate('client_models_network_channel_limitreached').fetch(event.channel), 'status');
             _kiwi.app.message.text(_kiwi.global.i18n.translate('client_models_network_channel_limitreached').fetch(event.channel));
@@ -762,6 +766,21 @@
             // We don't know what data contains, so don't do anything with it.
             //_kiwi.front.tabviews.server.addMsg(null, ' ', '== ' + data, 'status');
         }
+    }
+
+
+    function onUnknownCommand(event) {
+        var display_params = _.clone(event.params);
+
+        // A lot of commands have our nick as the first parameter. This is redundant for us
+        if (display_params[0] && display_params[0] == this.get('nick')) {
+            display_params.shift();
+        }
+
+        if (event.trailing)
+            display_params.push(event.trailing);
+
+        this.panels.server.addMsg('', '[' + event.command + '] ' + display_params.join(', ', ''));
     }
 }
 

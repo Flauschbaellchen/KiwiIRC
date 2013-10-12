@@ -71,6 +71,14 @@ conf.max_server_conns = 0;
 */
 conf.default_encoding = 'utf8';
 
+
+/*
+* Default GECOS (real name) for IRC connections
+* %n will be replaced with the users nick
+*/
+//conf.default_gecos = 'Web IRC Client';
+
+
 /*
  * Client side plugins
  * Array of URLs that will be loaded into the browser when the client first loads up
@@ -79,11 +87,6 @@ conf.default_encoding = 'utf8';
 conf.client_plugins = [
     // "http://server.com/kiwi/plugins/myplugin.html"
 ];
-
-
-
-// Enabled CAP extensions (See ENTER URL TO CAP INFO HERE PLS)
-conf.cap_options = [];
 
 
 
@@ -117,7 +120,7 @@ conf.reject_unauthorised_certificates = false;
 /*
  * Reverse proxy settings
  * Reverse proxies that have been reported to work can be found at:
- *     http://github.com/prawnsalad/KiwiIRC/wiki/Running-behind-a-proxy
+ *     https://kiwiirc.com/docs/installing/proxies
  */
 
 // Whitelisted HTTP proxies in CIDR format
@@ -158,17 +161,6 @@ conf.socks_proxy.user = null;
 conf.socks_proxy.pass = null;
 
 
-// Enabled transports for the browser to use
-conf.transports = [
-    "websocket",
-    "flashsocket",
-    "htmlfile",
-    "xhr-polling",
-    "jsonp-polling"
-];
-
-
-
 
 // Default quit message
 conf.quit_message = "http://www.kiwiirc.com/ - A hand-crafted IRC client";
@@ -188,7 +180,8 @@ conf.client = {
         scrollback: 250,
         show_joins_parts: true,
         show_timestamps: false,
-        mute_sounds: false
+        mute_sounds: false,
+        show_emoticons: true
     }
 };
 

@@ -58,16 +58,16 @@
 
     <script type="text/html" id="tmpl_userbox">
         <div class="userbox">
-            <a class="if_op op"><i class="icon-star"></i><%= op %></a>
-            <a class="if_op deop"><i class="icon-star-empty"></i><%= de_op %></a>
-            <a class="if_op voice"><i class="icon-volume-up"></i><%= voice %></a>
-            <a class="if_op devoice"><i class="icon-volume-off"></i><%= de_voice %></a>
-            <a class="if_op kick"><i class="icon-remove"></i><%= kick %></a>
-            <a class="if_op ban"><i class="icon-ban-circle"></i><%= ban %></a>
+            <a class="close_menu if_op op"><i class="icon-star"></i><%= op %></a>
+            <a class="close_menu if_op deop"><i class="icon-star-empty"></i><%= de_op %></a>
+            <a class="close_menu if_op voice"><i class="icon-volume-up"></i><%= voice %></a>
+            <a class="close_menu if_op devoice"><i class="icon-volume-off"></i><%= de_voice %></a>
+            <a class="close_menu if_op kick"><i class="icon-remove"></i><%= kick %></a>
+            <a class="close_menu if_op ban"><i class="icon-ban-circle"></i><%= ban %></a>
 
-            <a class="query"><i class="icon-comment"></i><%= message %></a>
-            <a class="info"><i class="icon-info-sign"></i><%= info %></a>
-            <a class="slap"><i class="icon-user-md"></i><%= slap %></a>
+            <a class="close_menu query"><i class="icon-comment"></i><%= message %></a>
+            <a class="close_menu info"><i class="icon-info-sign"></i><%= info %></a>
+            <a class="close_menu slap"><i class="icon-user-md"></i><%= slap %></a>
         </div>
     </script>
 
@@ -234,6 +234,12 @@
                             <%= mute %>
                         </label>
                     </div>
+                    <div class="checkbox">
+                        <label>
+                            <input data-setting="show_emoticons" type="checkbox">
+                            <%= emoticons %>
+                        </label>
+                    </div>
                     <label>
                         <input data-setting="scrollback" class="input-small" type="text" size="4" pattern="\d*">
                         <span><%= scroll_history %></span>
@@ -262,6 +268,14 @@
                     <small><%= default_note %></small>
                 </div>
             </section>
+
+            <section class="notification_enabler">
+                <h6><%= html5_notifications %></h6>
+                <div class="control-group">
+                    <button class="enable_notifications"><%= enable_notifications %></button>
+                </div>
+            </section>
+
         </div>
     </script>
 
