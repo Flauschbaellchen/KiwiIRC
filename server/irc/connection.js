@@ -101,6 +101,9 @@ var IrcConnection = function (hostname, port, ssl, nick, user, options, state, c
         this.socks = false;
     }
 
+    // Net. interface this connection should be made through
+    this.outgoing_interface = false;
+
     // Options sent by the IRCd
     this.options = Object.create(null);
     this.cap = {requested: [], enabled: []};
@@ -160,7 +163,12 @@ IrcConnection.prototype.connect = function () {
         var outgoing;
 
         // Decide which net. interface to make the connection through
-        if (global.config.outgoing_address) {
+        if (that.outgoing_interface) {
+            // An specific interface has been given for this connection
+            outgoing = this.outgoing_interface;
+
+        } else if (global.config.outgoing_address) {
+            // Pick an interface from the config
             if ((family === 'IPv6') && (global.config.outgoing_address.IPv6)) {
                 outgoing = global.config.outgoing_address.IPv6;
             } else {
@@ -187,7 +195,7 @@ IrcConnection.prototype.connect = function () {
         }
 
         // Are we connecting through a SOCKS proxy?
-        if (this.socks) {
+        if (that.socks) {
             that.socket = Socks.connect({
                 host: host,
                 port: that.irc_host.port,
@@ -704,7 +712,7 @@ function socketOnData(data) {
  * Deviates from the RFC a little to support the '/' character now used in some
  * IRCds
  */
-var parse_regex = /^(?:(?:(?:(@[^ ]+) )?):(?:([a-z0-9\x5B-\x60\x7B-\x7D\.\-*]+)|([a-z0-9\x5B-\x60\x7B-\x7D\.\-*]+)!([^\x00\r\n\ ]+?)@?([a-z0-9\.\-:\/_]+)?) )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$/i;
+var parse_regex = /^(?:(?:(?:@([^ ]+) )?):(?:([a-z0-9\x5B-\x60\x7B-\x7D\.\-*]+)|([a-z0-9\x5B-\x60\x7B-\x7D\.\-*]+)!([^\x00\r\n\ ]+?)@?([a-z0-9\.\-:\/_]+)?) )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$/i;
 
 function parseIrcLine(buffer_line) {
     var msg,

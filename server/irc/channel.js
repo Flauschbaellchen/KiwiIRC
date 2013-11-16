@@ -46,13 +46,9 @@ function onJoin(event) {
         channel: this.name,
         nick: event.nick,
         ident: event.ident,
-        hostname: event.hostname
+        hostname: event.hostname,
+        time: event.time
     });
-
-    // If we've just joined this channel then request get a nick list
-    if (event.nick === this.irc_connection.nick) {
-        this.irc_connection.write('NAMES ' + this.name);
-    }
 }
 
 
@@ -62,7 +58,8 @@ function onPart(event) {
         ident: event.ident,
         hostname: event.hostname,
         channel: this.name,
-        message: event.message
+        message: event.message,
+        time: event.time
     });
 }
 
@@ -74,7 +71,8 @@ function onKick(event) {
         ident: event.ident,
         hostname: event.hostname,
         channel: this.name,
-        message: event.message
+        message: event.message,
+        time: event.time
     });
 }
 
@@ -84,7 +82,8 @@ function onQuit(event) {
         nick: event.nick,
         ident: event.ident,
         hostname: event.hostname,
-        message: event.message
+        message: event.message,
+        time: event.time
     });
 }
 
@@ -95,7 +94,8 @@ function onMsg(event) {
         ident: event.ident,
         hostname: event.hostname,
         channel: this.name,
-        msg: event.msg
+        msg: event.msg,
+        time: event.time
     });
 }
 
@@ -107,7 +107,8 @@ function onNotice(event) {
         ident: event.ident,
         hostname: event.hostname,
         target: event.target,
-        msg: event.msg
+        msg: event.msg,
+        time: event.time
     });
 }
 
@@ -119,7 +120,8 @@ function onCtcpRequest(event) {
         hostname: event.hostname,
         target: event.target,
         type: event.type,
-        msg: event.msg
+        msg: event.msg,
+        time: event.time
     });
 }
 
@@ -131,7 +133,8 @@ function onCtcpResponse(event) {
         hostname: event.hostname,
         target: event.target,
         type: event.type,
-        msg: event.msg
+        msg: event.msg,
+        time: event.time
     });
 }
 
@@ -172,7 +175,8 @@ function onTopic(event) {
     this.irc_connection.clientEvent('topic', {
         nick: event.nick,
         channel: this.name,
-        topic: event.topic
+        topic: event.topic,
+        time: event.time
     });
 }
 
@@ -208,6 +212,7 @@ function onMode(event) {
     this.irc_connection.clientEvent('mode', {
         target: event.target,
         nick: event.nick,
-        modes: event.modes
+        modes: event.modes,
+        time: event.time
     });
 }

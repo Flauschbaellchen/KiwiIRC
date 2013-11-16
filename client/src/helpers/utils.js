@@ -215,6 +215,30 @@ function hsl2rgb(h, s, l) {
 
 
 /**
+ * Formats a kiwi message to IRC format
+ */
+function formatToIrcMsg(message) {
+    // Format any colour codes (eg. $c4)
+    message = message.replace(/%C(\d)/ig, function(match, colour_number) {
+        return String.fromCharCode(3) + colour_number.toString();
+    });
+
+    var formatters = {
+        B: '\x02',    // Bold
+        I: '\x1D',    // Italics
+        U: '\x1F',    // Underline
+        O: '\x0F'     // Out / Clear formatting
+    };
+    message = message.replace(/%([BIUO])/ig, function(match, format_code) {
+        if (typeof formatters[format_code.toUpperCase()] !== 'undefined')
+            return formatters[format_code.toUpperCase()];
+    });
+
+    return message;
+}
+
+
+/**
 *   Formats a message. Adds bold, underline and colouring
 *   @param      {String}    msg The message to format
 *   @returns    {String}        The HTML formatted message
@@ -449,4 +473,32 @@ function emoticonFromText(str) {
     }
 
     return words_out.join(' ');
+}
+
+// Code based on http://anentropic.wordpress.com/2009/06/25/javascript-iso8601-parser-and-pretty-dates/#comment-154
+function parseISO8601(str) {
+    if (Date.prototype.toISOString) {
+        return new Date(str);
+    } else {
+        var parts = str.split('T'),
+            dateParts = parts[0].split('-'),
+            timeParts = parts[1].split('Z'),
+            timeSubParts = timeParts[0].split(':'),
+            timeSecParts = timeSubParts[2].split('.'),
+            timeHours = Number(timeSubParts[0]),
+            _date = new Date();
+
+        _date.setUTCFullYear(Number(dateParts[0]));
+        _date.setUTCDate(1);
+        _date.setUTCMonth(Number(dateParts[1])-1);
+        _date.setUTCDate(Number(dateParts[2]));
+        _date.setUTCHours(Number(timeHours));
+        _date.setUTCMinutes(Number(timeSubParts[1]));
+        _date.setUTCSeconds(Number(timeSecParts[0]));
+        if (timeSecParts[1]) {
+            _date.setUTCMilliseconds(Number(timeSecParts[1]));
+        }
+
+        return _date;
+    }
 }
