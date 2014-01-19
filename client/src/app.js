@@ -65,7 +65,8 @@ _kiwi.global = {
             var funcs = {
                 kiwi: 'kiwi', raw: 'raw', kick: 'kick', topic: 'topic',
                 part: 'part', join: 'join', action: 'action', ctcp: 'ctcp',
-                notice: 'notice', msg: 'privmsg', changeNick: 'changeNick'
+                notice: 'notice', msg: 'privmsg', changeNick: 'changeNick',
+                channelInfo: 'channelInfo', mode: 'mode'
             };
 
             // Proxy each gateway method
@@ -115,10 +116,6 @@ _kiwi.global = {
             }
 
             _kiwi.app = new _kiwi.model.Application(opts);
-
-            if (opts.kiwi_server) {
-                _kiwi.app.kiwi_server = opts.kiwi_server;
-            }
 
             // Start the client up
             _kiwi.app.start();
