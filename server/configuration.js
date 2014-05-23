@@ -1,6 +1,8 @@
 var fs      = require('fs'),
     events  = require('events'),
-    util    = require('util');
+    util    = require('util'),
+    path    = require('path'),
+    winston = require('winston');
 
 var config_filename = 'config.js',
     config_dirs = ['/etc/kiwiirc/', __dirname + '/../'],
@@ -17,7 +19,8 @@ Config.prototype.loadConfig = function (manual_config_file) {
         conf_filepath,
         i;
 
-    if (manual_config_file) {
+    if ((manual_config_file) || (this.manual_config_file)) {
+        manual_config_file =  path.resolve(path.normalize(manual_config_file || this.manual_config_file));
         if (fs.existsSync(manual_config_file)) {
             try {
                 if (fs.lstatSync(manual_config_file).isFile() === true) {
@@ -26,13 +29,16 @@ Config.prototype.loadConfig = function (manual_config_file) {
 
                     // Try load the new config file
                     new_config = require(manual_config_file);
+
+                    // Save location of configuration file so that we can re-load it later
+                    this.manual_config_file = manual_config_file;
                 }
             } catch (e) {
-                console.log('An error occured parsing the config file ' + manual_config_file + ': ' + e.message);
+                winston.error('An error occured parsing the config file %s: %s', manual_config_file, e.message);
                 process.exit(1);
             }
         } else {
-            console.log('Could not find config file ' + manual_config_file);
+            winston.error('Could not find config file %s', manual_config_file);
             process.exit(1);
         }
     } else {
@@ -54,7 +60,7 @@ Config.prototype.loadConfig = function (manual_config_file) {
                 case 'ENOENT':      // No file/dir
                     break;
                 default:
-                    console.log('An error occured parsing the config file ' + config_dirs[i] + config_filename + ': ' + e.message);
+                    winston.warn('An error occured parsing the config file %s%s: %s', config_dirs[i], config_filename, e.message);
                     return false;
                 }
                 continue;
@@ -81,7 +87,7 @@ Config.prototype.setEnvironment = function (new_environment) {
 // Get the current config. Optionally for a different environment than currently set
 Config.prototype.get = function (specific_environment) {
     specific_environment = specific_environment || environment;
-    
+
     return loaded_config[specific_environment] || {};
 };
 

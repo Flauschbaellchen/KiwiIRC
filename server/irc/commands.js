@@ -6,20 +6,74 @@ var _ = require('lodash'),
 
 irc_numerics = {
     '001': 'RPL_WELCOME',
+    '002': 'RPL_YOURHOST',
+    '003': 'RPL_CREATED',
     '004': 'RPL_MYINFO',
     '005': 'RPL_ISUPPORT',
     '006': 'RPL_MAPMORE',
     '007': 'RPL_MAPEND',
+    '008': 'RPL_SNOMASK',
+    '015': 'RPL_MAP',
+    '017': 'RPL_MAPEND',
+    '200': 'RPL_TRACELINK',
+    '201': 'RPL_TRACECONNECTING',
+    '202': 'RPL_TRACEHANDSHAKE',
+    '203': 'RPL_TRACEUNKNOWN',
+    '204': 'RPL_TRACEOPERATOR',
+    '205': 'RPL_TRACEUSER',
+    '206': 'RPL_TRACESERVER',
+    '207': 'RPL_TRACESERVICE',
+    '208': 'RPL_TRACENEWTYPE',
+    '209': 'RPL_TRACECLASS',
+    '210': 'RPL_TRACERECONNECT',
+    '211': 'RPL_STATSLINKINFO',
+    '212': 'RPL_STATSCOMMANDS',
+    '213': 'RPL_STATSCLINE',
+    '214': 'RPL_STATSNLINE',
+    '215': 'RPL_STATSILINE',
+    '216': 'RPL_STATSKLINE',
+    '217': 'RPL_STATSPLINE',
+    '218': 'RPL_STATSYLINE',
+    '219': 'RPL_ENDOFSTATS',
+    '220': 'RPL_STATSBLINE',
+    '221': 'RPL_UMODEIS',
+    '222': 'RPL_SQLINE_NICK',
+    '223': 'RPL_STATS_E',
+    '224': 'RPL_STATS_D',
+    '229': 'RPL_SPAMFILTER',
+    '231': 'RPL_SERVICEINFO',
+    '232': 'RPL_ENDOFSERVICES',
+    '233': 'RPL_SERVICE',
+    '234': 'RPL_SERVLIST',
+    '235': 'RPL_SERVLISTEND',
+    '241': 'RPL_STATSLLINE',
+    '242': 'RPL_STATSUPTIME',
+    '243': 'RPL_STATSOLINE',
+    '244': 'RPL_STATSHLINE',
+    '245': 'RPL_STATSSLINE',
+    '246': 'RPL_STATSGLINE',
+    '247': 'RPL_STATSXLINE',
+    '248': 'RPL_STATSULINE',
+    '249': 'RPL_STATSDEBUG',
     '250': 'RPL_STATSCONN',
     '251': 'RPL_LUSERCLIENT',
     '252': 'RPL_LUSEROP',
     '253': 'RPL_LUSERUNKNOWN',
     '254': 'RPL_LUSERCHANNELS',
     '255': 'RPL_LUSERME',
+    '256': 'RPL_ADMINME',
+    '257': 'RPL_ADMINLOC1',
+    '258': 'RPL_ADMINLOC2',
+    '259': 'RPL_ADMINEMAIL',
     '265': 'RPL_LOCALUSERS',
     '266': 'RPL_GLOBALUSERS',
+    '290': 'RPL_HELPHDR',
+    '291': 'RPL_HELPOP',
+    '292': 'RPL_HELPTLR',
     '301': 'RPL_AWAY',
+    '304': 'RPL_ZIPSTATS',
     '307': 'RPL_WHOISREGNICK',
+    '310': 'RPL_WHOISHELPOP',
     '311': 'RPL_WHOISUSER',
     '312': 'RPL_WHOISSERVER',
     '313': 'RPL_WHOISOPERATOR',
@@ -28,6 +82,7 @@ irc_numerics = {
     '317': 'RPL_WHOISIDLE',
     '318': 'RPL_ENDOFWHOIS',
     '319': 'RPL_WHOISCHANNELS',
+    '320': 'RPL_WHOISSPECIAL',
     '321': 'RPL_LISTSTART',
     '322': 'RPL_LIST',
     '323': 'RPL_LISTEND',
@@ -38,6 +93,8 @@ irc_numerics = {
     '331': 'RPL_NOTOPIC',
     '332': 'RPL_TOPIC',
     '333': 'RPL_TOPICWHOTIME',
+    '335': 'RPL_WHOISBOT',
+    '338': 'RPL_WHOISACTUALLY',
     '341': 'RPL_INVITING',
     '352': 'RPL_WHOREPLY',
     '353': 'RPL_NAMEREPLY',
@@ -47,38 +104,52 @@ irc_numerics = {
     '367': 'RPL_BANLIST',
     '368': 'RPL_ENDOFBANLIST',
     '369': 'RPL_ENDOFWHOWAS',
+    '371': 'RPL_INFO',
     '372': 'RPL_MOTD',
+    '374': 'RPL_ENDINFO',
     '375': 'RPL_MOTDSTART',
     '376': 'RPL_ENDOFMOTD',
     '378': 'RPL_WHOISHOST',
     '379': 'RPL_WHOISMODES',
+    '381': 'RPL_NOWOPER',
+    '396': 'RPL_HOSTCLOACKING',
     '401': 'ERR_NOSUCHNICK',
+    '402': 'ERR_NOSUCHSERVER',
     '404': 'ERR_CANNOTSENDTOCHAN',
     '405': 'ERR_TOOMANYCHANNELS',
     '406': 'ERR_WASNOSUCHNICK',
     '421': 'ERR_UNKNOWNCOMMAND',
     '422': 'ERR_NOMOTD',
+    '423': 'ERR_NOADMININFO',
     '432': 'ERR_ERRONEUSNICKNAME',
     '433': 'ERR_NICKNAMEINUSE',
     '441': 'ERR_USERNOTINCHANNEL',
     '442': 'ERR_NOTONCHANNEL',
     '443': 'ERR_USERONCHANNEL',
     '451': 'ERR_NOTREGISTERED',
+    '461': 'ERR_NOTENOUGHPARAMS',
     '464': 'ERR_PASSWDMISMATCH',
     '470': 'ERR_LINKCHANNEL',
     '471': 'ERR_CHANNELISFULL',
+    '472': 'ERR_UNKNOWNMODE',
     '473': 'ERR_INVITEONLYCHAN',
     '474': 'ERR_BANNEDFROMCHAN',
     '475': 'ERR_BADCHANNELKEY',
     '481': 'ERR_NOPRIVILEGES',
     '482': 'ERR_CHANOPRIVSNEEDED',
+    '483': 'ERR_CANTKILLSERVER',
+    '484': 'ERR_ISCHANSERVICE',
+    '485': 'ERR_ISREALSERVICE',
+    '491': 'ERR_NOOPERHOST',
     '670': 'RPL_STARTTLS',
     '671': 'RPL_WHOISSECURE',
     '900': 'RPL_SASLAUTHENTICATED',
     '903': 'RPL_SASLLOGGEDIN',
     '904': 'ERR_SASLNOTAUTHORISED',
     '906': 'ERR_SASLABORTED',
-    '907': 'ERR_SASLALREADYAUTHED'
+    '907': 'ERR_SASLALREADYAUTHED',
+    '972': 'ERR_CANNOTDOCOMMAND',
+    'WALLOPS': 'RPL_WALLOPS'
 };
 
 
@@ -115,29 +186,16 @@ unknownCommand = function (command, data) {
 
     this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' unknown_command', {
         command: command,
-        params: params,
-        trailing: data.trailing
+        params: params
     });
-
-
-/*
-            this.irc_connection.emit(namespace + ' ' + command.params[0] + ' notice', {
-                from_server: command.prefix ? true : false,
-                nick: command.nick || command.prefix || undefined,
-                ident: command.ident,
-                hostname: command.hostname,
-                target: command.params[0],
-                msg: command.trailing
-            });
-            */
- };
+};
 
 
 handlers = {
     'RPL_WELCOME': function (command) {
         var nick =  command.params[0];
         this.irc_connection.registered = true;
-        this.cap_negotation = false;
+        this.cap_negotiation = false;
         this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' connect', {
             nick: nick
         });
@@ -177,14 +235,14 @@ handlers = {
     'RPL_ENDOFWHOIS': function (command) {
         this.irc_connection.emit('user ' + command.params[1] + ' endofwhois', {
             nick: command.params[1],
-            msg: command.trailing
+            msg: command.params[command.params.length - 1]
         });
     },
 
     'RPL_AWAY': function (command) {
         this.irc_connection.emit('user ' + command.params[1] + ' whoisaway', {
             nick: command.params[1],
-            reason: command.trailing
+            reason: command.params[command.params.length - 1]
         });
     },
 
@@ -193,7 +251,21 @@ handlers = {
             nick: command.params[1],
             ident: command.params[2],
             host: command.params[3],
-            msg: command.trailing
+            msg: command.params[command.params.length - 1]
+        });
+    },
+
+    'RPL_WHOISHELPOP': function (command) {
+        this.irc_connection.emit('user ' + command.params[1] + ' whoishelpop', {
+            nick: command.params[1],
+            msg: command.params[command.params.length - 1]
+        });
+    },
+
+    'RPL_WHOISBOT': function (command) {
+        this.irc_connection.emit('user ' + command.params[1] + ' whoisbot', {
+            nick: command.params[1],
+            msg: command.params[command.params.length - 1]
         });
     },
 
@@ -201,28 +273,28 @@ handlers = {
         this.irc_connection.emit('user ' + command.params[1] + ' whoisserver', {
             nick: command.params[1],
             irc_server: command.params[2],
-            server_info: command.trailing
+            server_info: command.params[command.params.length - 1]
         });
     },
 
     'RPL_WHOISOPERATOR': function (command) {
         this.irc_connection.emit('user ' + command.params[1] + ' whoisoperator', {
             nick: command.params[1],
-            msg: command.trailing
+            msg: command.params[command.params.length - 1]
         });
     },
 
     'RPL_WHOISCHANNELS':       function (command) {
         this.irc_connection.emit('user ' + command.params[1] + ' whoischannels', {
             nick: command.params[1],
-            chans: command.trailing
+            chans: command.params[command.params.length - 1]
         });
     },
 
     'RPL_WHOISMODES': function (command) {
         this.irc_connection.emit('user ' + command.params[1] + ' whoismodes', {
             nick: command.params[1],
-            msg: command.trailing
+            msg: command.params[command.params.length - 1]
         });
     },
 
@@ -237,14 +309,14 @@ handlers = {
     'RPL_WHOISREGNICK': function (command) {
         this.irc_connection.emit('user ' + command.params[1] + ' whoisregnick', {
             nick: command.params[1],
-            msg: command.trailing
+            msg: command.params[command.params.length - 1]
         });
     },
 
     'RPL_WHOISHOST': function (command) {
         this.irc_connection.emit('user ' + command.params[1] + ' whoishost', {
             nick: command.params[1],
-            msg: command.trailing
+            msg: command.params[command.params.length - 1]
         });
     },
 
@@ -266,7 +338,7 @@ handlers = {
             nick: command.params[1],
             ident: command.params[2],
             host: command.params[3],
-            real_name: command.trailing
+            real_name: command.params[command.params.length - 1]
         });
     },
 
@@ -294,7 +366,7 @@ handlers = {
         this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' list_channel', {
             channel: command.params[1],
             num_users: parseInt(command.params[2], 10),
-            topic: command.trailing
+            topic: command.params[3] || ''
         });
     },
 
@@ -322,13 +394,13 @@ handlers = {
 
         this.irc_connection.emit('channel ' + channel + ' info', {
             channel: channel,
-            url: command.trailing
+            url: command.params[command.params.length - 1]
         });
     },
 
     'RPL_MOTD': function (command) {
         this.irc_connection.emit('server '  + this.irc_connection.irc_host.hostname + ' motd', {
-            motd: command.trailing + '\n'
+            motd: command.params[command.params.length - 1] + '\n'
         });
     },
 
@@ -341,7 +413,7 @@ handlers = {
     },
 
     'RPL_NAMEREPLY': function (command) {
-        var members = command.trailing.split(' ');
+        var members = command.params[command.params.length - 1].split(' ');
         var member_list = [];
         var that = this;
         _.each(members, function (member) {
@@ -404,7 +476,7 @@ handlers = {
     'RPL_TOPIC': function (command) {
         this.irc_connection.emit('channel ' + command.params[1] + ' topic', {
             channel: command.params[1],
-            topic: command.trailing
+            topic: command.params[command.params.length - 1]
         });
     },
 
@@ -431,14 +503,12 @@ handlers = {
     },
 
     'PING': function (command) {
-        this.irc_connection.write('PONG ' + command.trailing);
+        this.irc_connection.write('PONG ' + command.params[command.params.length - 1]);
     },
 
     'JOIN': function (command) {
         var channel, time;
-        if (typeof command.trailing === 'string' && command.trailing !== '') {
-            channel = command.trailing;
-        } else if (typeof command.params[0] === 'string' && command.params[0] !== '') {
+        if (typeof command.params[0] === 'string' && command.params[0] !== '') {
             channel = command.params[0];
         }
 
@@ -455,17 +525,22 @@ handlers = {
     },
 
     'PART': function (command) {
-        var time;
+        var time, channel, message;
 
         // Check if we have a server-time
         time = getServerTime.call(this, command);
 
-        this.irc_connection.emit('channel ' + command.params[0] + ' part', {
+        channel = command.params[0];
+        if (command.params.length > 1) {
+            message = command.params[command.params.length - 1];
+        }
+
+        this.irc_connection.emit('channel ' + channel + ' part', {
             nick: command.nick,
             ident: command.ident,
             hostname: command.hostname,
-            channel: command.params[0],
-            message: command.trailing,
+            channel: channel,
+            message: message,
             time: time
         });
     },
@@ -482,7 +557,7 @@ handlers = {
             ident: command.ident,
             hostname: command.hostname,
             channel: command.params[0],
-            message: command.trailing,
+            message: command.params[command.params.length - 1],
             time: time
         });
     },
@@ -497,32 +572,33 @@ handlers = {
             nick: command.nick,
             ident: command.ident,
             hostname: command.hostname,
-            message: command.trailing,
+            message: command.params[command.params.length - 1],
             time: time
         });
     },
 
     'NOTICE': function (command) {
         var namespace,
-            time;
+            time,
+            msg;
 
         // Check if we have a server-time
         time = getServerTime.call(this, command);
 
-
-        if ((command.trailing.charAt(0) === String.fromCharCode(1)) && (command.trailing.charAt(command.trailing.length - 1) === String.fromCharCode(1))) {
+        msg = command.params[command.params.length - 1];
+        if ((msg.charAt(0) === String.fromCharCode(1)) && (msg.charAt(msg.length - 1) === String.fromCharCode(1))) {
             // It's a CTCP response
-            namespace = (command.params[0].toLowerCase() == this.irc_connection.nick.toLowerCase()) ? 'user' : 'channel';
+            namespace = (command.params[0].toLowerCase() === this.irc_connection.nick.toLowerCase()) ? 'user' : 'channel';
             this.irc_connection.emit(namespace + ' ' + command.params[0] + ' ctcp_response', {
                 nick: command.nick,
                 ident: command.ident,
                 hostname: command.hostname,
-                channel: command.params[0],
-                msg: command.trailing.substring(1, command.trailing.length - 1),
+                target: command.params[0],
+                msg: msg.substring(1, msg.length - 1),
                 time: time
             });
         } else {
-            namespace = (command.params[0].toLowerCase() == this.irc_connection.nick.toLowerCase() || command.params[0] == '*') ?
+            namespace = (command.params[0].toLowerCase() === this.irc_connection.nick.toLowerCase() || command.params[0] === '*') ?
                 'user' :
                 'channel';
 
@@ -532,7 +608,7 @@ handlers = {
                 ident: command.ident,
                 hostname: command.hostname,
                 target: command.params[0],
-                msg: command.trailing,
+                msg: msg,
                 time: time
             });
         }
@@ -548,7 +624,7 @@ handlers = {
             nick: command.nick,
             ident: command.ident,
             hostname: command.hostname,
-            newnick: command.trailing || command.params[0],
+            newnick: command.params[0],
             time: time
         });
     },
@@ -557,13 +633,15 @@ handlers = {
         var time;
 
         // If we don't have an associated channel, no need to continue
-        if (!command.params[0]) return;
+        if (!command.params[0]) {
+            return;
+        }
 
         // Check if we have a server-time
         time = getServerTime.call(this, command);
 
         var channel = command.params[0],
-            topic = command.trailing || '';
+            topic = command.params[command.params.length - 1] || '';
 
         this.irc_connection.emit('channel ' + channel + ' topic', {
             nick: command.nick,
@@ -580,7 +658,7 @@ handlers = {
         time = getServerTime.call(this, command);
 
         // Get a JSON representation of the modes
-        modes = parseModeList.call(this, command.params[1] || command.trailing, command.params.slice(2));
+        modes = parseModeList.call(this, command.params[1], command.params.slice(2));
         event = (_.contains(this.irc_connection.options.CHANTYPES, command.params[0][0]) ? 'channel ' : 'user ') + command.params[0] + ' mode';
 
         this.irc_connection.emit(event, {
@@ -592,57 +670,70 @@ handlers = {
     },
 
     'PRIVMSG': function (command) {
-        var tmp, namespace, time;
+        var tmp, namespace, time, msg, version_string, client_info;
 
         // Check if we have a server-time
         time = getServerTime.call(this, command);
 
-        if ((command.trailing.charAt(0) === String.fromCharCode(1)) && (command.trailing.charAt(command.trailing.length - 1) === String.fromCharCode(1))) {
+        msg = command.params[command.params.length - 1];
+        if ((msg.charAt(0) === String.fromCharCode(1)) && (msg.charAt(msg.length - 1) === String.fromCharCode(1))) {
             //CTCP request
-            if (command.trailing.substr(1, 6) === 'ACTION') {
-                this.irc_connection.clientEvent('action', {
-                    nick: command.nick,
-                    ident: command.ident,
-                    hostname: command.hostname,
-                    channel: command.params[0],
-                    msg: command.trailing.substring(8, command.trailing.length - 1),
-                    time: time
-                });
-            } else if (command.trailing.substr(1, 4) === 'KIWI') {
-                tmp = command.trailing.substring(6, command.trailing.length - 1);
-                namespace = tmp.split(' ', 1)[0];
-                this.irc_connection.clientEvent('kiwi', {
-                    namespace: namespace,
-                    data: tmp.substr(namespace.length + 1),
-                    time: time
-                });
-            } else if (command.trailing.substr(1, 7) === 'VERSION') {
-                this.irc_connection.write('NOTICE ' + command.nick + ' :' + String.fromCharCode(1) + 'VERSION KiwiIRC' + String.fromCharCode(1));
-            } else if (command.trailing.substr(1, 6) === 'SOURCE') {
-                this.irc_connection.write('NOTICE ' + command.nick + ' :' + String.fromCharCode(1) + 'SOURCE http://www.kiwiirc.com/' + String.fromCharCode(1));
-            } else if (command.trailing.substr(1, 10) === 'CLIENTINFO') {
-                this.irc_connection.write('NOTICE ' + command.nick + ' :' + String.fromCharCode(1) + 'CLIENTINFO SOURCE VERSION TIME' + String.fromCharCode(1));
-            } else {
-                namespace = (command.params[0].toLowerCase() == this.irc_connection.nick.toLowerCase()) ? 'user' : 'channel';
-                this.irc_connection.emit(namespace + ' ' + command.nick + ' ctcp_request', {
+            if (msg.substr(1, 6) === 'ACTION') {
+                namespace = (command.params[0].toLowerCase() === this.irc_connection.nick.toLowerCase()) ?
+                    'user ' + command.nick :
+                    'channel ' + command.params[0];
+
+                this.irc_connection.emit(namespace + ' action', {
                     nick: command.nick,
                     ident: command.ident,
                     hostname: command.hostname,
                     target: command.params[0],
-                    type: (command.trailing.substring(1, command.trailing.length - 1).split(' ') || [null])[0],
-                    msg: command.trailing.substring(1, command.trailing.length - 1),
+                    msg: msg.substring(8, msg.length - 1),
+                    time: time
+                });
+
+            } else if (msg.substr(1, 7) === 'VERSION') {
+                client_info = this.irc_connection.state.client.client_info;
+                version_string = global.build_version;
+
+                // If the client build_version differs from the server, add this to the version_string
+                if (client_info && client_info.build_version !== global.build_version) {
+                    version_string += ', client build: ' + client_info.build_version;
+                }
+
+                version_string = 'KiwiIRC (' + version_string + ')';
+                this.irc_connection.write('NOTICE ' + command.nick + ' :' + String.fromCharCode(1) + 'VERSION ' + version_string + String.fromCharCode(1));
+
+            } else if (msg.substr(1, 6) === 'SOURCE') {
+                this.irc_connection.write('NOTICE ' + command.nick + ' :' + String.fromCharCode(1) + 'SOURCE http://www.kiwiirc.com/' + String.fromCharCode(1));
+
+            } else if (msg.substr(1, 10) === 'CLIENTINFO') {
+                this.irc_connection.write('NOTICE ' + command.nick + ' :' + String.fromCharCode(1) + 'CLIENTINFO SOURCE VERSION TIME' + String.fromCharCode(1));
+
+            } else {
+                namespace = (command.params[0].toLowerCase() === this.irc_connection.nick.toLowerCase()) ?
+                    'user ' + command.nick :
+                    'channel ' + command.params[0];
+
+                this.irc_connection.emit(namespace + ' ctcp_request', {
+                    nick: command.nick,
+                    ident: command.ident,
+                    hostname: command.hostname,
+                    target: command.params[0],
+                    type: (msg.substring(1, msg.length - 1).split(' ') || [null])[0],
+                    msg: msg.substring(1, msg.length - 1),
                     time: time
                 });
             }
         } else {
             // A message to a user (private message) or to a channel?
-            namespace = (command.params[0].toLowerCase() == this.irc_connection.nick.toLowerCase()) ? 'user ' + command.nick : 'channel ' + command.params[0];
+            namespace = (command.params[0].toLowerCase() === this.irc_connection.nick.toLowerCase()) ? 'user ' + command.nick : 'channel ' + command.params[0];
             this.irc_connection.emit(namespace + ' privmsg', {
                 nick: command.nick,
                 ident: command.ident,
                 hostname: command.hostname,
-                channel: command.params[0],
-                msg: command.trailing,
+                target: command.params[0],
+                msg: msg,
                 time: time
             });
         }
@@ -651,7 +742,7 @@ handlers = {
     'CAP': function (command) {
         // TODO: capability modifiers
         // i.e. - for disable, ~ for requires ACK, = for sticky
-        var capabilities = command.trailing.replace(/(?:^| )[\-~=]/, '').split(' ');
+        var capabilities = command.params[command.params.length - 1].replace(/(?:^| )[\-~=]/, '').split(' ');
         var request;
 
         // Which capabilities we want to enable
@@ -670,7 +761,7 @@ handlers = {
                     this.irc_connection.write('CAP REQ :' + request.join(' '));
                 } else {
                     this.irc_connection.write('CAP END');
-                    this.irc_connection.cap_negotation = false;
+                    this.irc_connection.cap_negotiation = false;
                 }
                 break;
             case 'ACK':
@@ -686,7 +777,7 @@ handlers = {
                         this.irc_connection.write('AUTHENTICATE PLAIN');
                     } else {
                         this.irc_connection.write('CAP END');
-                        this.irc_connection.cap_negotation = false;
+                        this.irc_connection.cap_negotiation = false;
                     }
                 }
                 break;
@@ -696,7 +787,7 @@ handlers = {
                 }
                 if (this.irc_connection.cap.requested.length > 0) {
                     this.irc_connection.write('CAP END');
-                    this.irc_connection.cap_negotation = false;
+                    this.irc_connection.cap_negotiation = false;
                 }
                 break;
             case 'LIST':
@@ -720,7 +811,7 @@ handlers = {
             }
         } else {
             this.irc_connection.write('CAP END');
-            this.irc_connection.cap_negotation = false;
+            this.irc_connection.cap_negotiation = false;
         }
     },
 
@@ -732,31 +823,32 @@ handlers = {
 
         this.irc_connection.emit('user ' + command.nick + ' away', {
             nick: command.nick,
-            msg: command.trailing,
+            msg: command.params[command.params.length - 1],
             time: time
         });
     },
 
     'RPL_SASLAUTHENTICATED': function (command) {
         this.irc_connection.write('CAP END');
-        this.irc_connection.cap_negotation = false;
+        this.irc_connection.cap_negotiation = false;
         this.irc_connection.sasl = true;
     },
 
     'RPL_SASLLOGGEDIN': function (command) {
-        if (this.irc_connection.cap_negotation === false) {
+        if (this.irc_connection.cap_negotiation === true) {
             this.irc_connection.write('CAP END');
+            this.irc_connection.cap_negotiation = false;
         }
     },
 
     'ERR_SASLNOTAUTHORISED': function (command) {
         this.irc_connection.write('CAP END');
-        this.irc_connection.cap_negotation = false;
+        this.irc_connection.cap_negotiation = false;
     },
 
     'ERR_SASLABORTED': function (command) {
         this.irc_connection.write('CAP END');
-        this.irc_connection.cap_negotation = false;
+        this.irc_connection.cap_negotiation = false;
     },
 
     'ERR_SASLALREADYAUTHED': function (command) {
@@ -765,7 +857,7 @@ handlers = {
 
     'ERROR': function (command) {
         this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' error', {
-            reason: command.trailing
+            reason: command.params[command.params.length - 1]
         });
     },
     ERR_PASSWDMISMATCH: function (command) {
@@ -782,21 +874,21 @@ handlers = {
     ERR_NOSUCHNICK: function (command) {
         this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' no_such_nick', {
             nick: command.params[1],
-            reason: command.trailing
+            reason: command.params[command.params.length - 1]
         });
     },
 
     ERR_CANNOTSENDTOCHAN: function (command) {
-        this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' cannot_send_to_chan', {
+        this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' cannot_send_to_channel', {
             channel: command.params[1],
-            reason: command.trailing
+            reason: command.params[command.params.length - 1]
         });
     },
 
     ERR_TOOMANYCHANNELS: function (command) {
         this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' too_many_channels', {
             channel: command.params[1],
-            reason: command.trailing
+            reason: command.params[command.params.length - 1]
         });
     },
 
@@ -804,14 +896,14 @@ handlers = {
         this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' user_not_in_channel', {
             nick: command.params[0],
             channel: command.params[1],
-            reason: command.trailing
+            reason: command.params[command.params.length - 1]
         });
     },
 
     ERR_NOTONCHANNEL: function (command) {
         this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' not_on_channel', {
             channel: command.params[1],
-            reason: command.trailing
+            reason: command.params[command.params.length - 1]
         });
     },
 
@@ -825,49 +917,49 @@ handlers = {
     ERR_CHANNELISFULL: function (command) {
         this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' channel_is_full', {
             channel: command.params[1],
-            reason: command.trailing
+            reason: command.params[command.params.length - 1]
         });
     },
 
     ERR_INVITEONLYCHAN: function (command) {
         this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' invite_only_channel', {
             channel: command.params[1],
-            reason: command.trailing
+            reason: command.params[command.params.length - 1]
         });
     },
 
     ERR_BANNEDFROMCHAN: function (command) {
         this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' banned_from_channel', {
             channel: command.params[1],
-            reason: command.trailing
+            reason: command.params[command.params.length - 1]
         });
     },
 
     ERR_BADCHANNELKEY: function (command) {
         this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' bad_channel_key', {
             channel: command.params[1],
-            reason: command.trailing
+            reason: command.params[command.params.length - 1]
         });
     },
 
     ERR_CHANOPRIVSNEEDED: function (command) {
         this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' chanop_privs_needed', {
             channel: command.params[1],
-            reason: command.trailing
+            reason: command.params[command.params.length - 1]
         });
     },
 
     ERR_NICKNAMEINUSE: function (command) {
         this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' nickname_in_use', {
             nick: command.params[1],
-            reason: command.trailing
+            reason: command.params[command.params.length - 1]
         });
     },
 
     ERR_ERRONEUSNICKNAME: function(command) {
         this.irc_connection.emit('server ' + this.irc_connection.irc_host.hostname + ' erroneus_nickname', {
             nick: command.params[1],
-            reason: command.trailing
+            reason: command.params[command.params.length - 1]
         });
     },
 
@@ -877,92 +969,503 @@ handlers = {
     RPL_MAPMORE: function (command) {
         var params = _.clone(command.params);
         params.shift();
-        genericNotice.call(this, command, params.join(', ') + ' ' + command.trailing);
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
     },
 
     RPL_MAPEND: function (command) {
         var params = _.clone(command.params);
         params.shift();
-        genericNotice.call(this, command, params.join(', ') + ' ' + command.trailing);
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
     },
 
     RPL_LINKS: function (command) {
         var params = _.clone(command.params);
         params.shift();
-        genericNotice.call(this, command, params.join(', ') + ' ' + command.trailing);
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
     },
 
     RPL_ENDOFLINKS: function (command) {
         var params = _.clone(command.params);
         params.shift();
-        genericNotice.call(this, command, params.join(', ') + ' ' + command.trailing);
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
     },
 
     ERR_UNKNOWNCOMMAND: function (command) {
         var params = _.clone(command.params);
         params.shift();
-        genericNotice.call(this, command, '`' + params.join(', ') + '` ' + command.trailing);
+        genericNotice.call(this, command, '`' + params.slice(0, -1).join(', ') + '` ' + command.params[command.params.length - 1]);
     },
 
     ERR_NOMOTD: function (command) {
         var params = _.clone(command.params);
         params.shift();
-        genericNotice.call(this, command, command.trailing);
+        genericNotice.call(this, command, command.params[command.params.length - 1]);
     },
 
     ERR_NOPRIVILEGES: function (command) {
         var params = _.clone(command.params);
         params.shift();
-        genericNotice.call(this, command, command.trailing);
+        genericNotice.call(this, command, command.params[command.params.length - 1]);
     },
 
     RPL_STATSCONN: function (command) {
         var params = _.clone(command.params);
         params.shift();
-        genericNotice.call(this, command, params.join(', ') + ' ' + command.trailing);
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
     },
 
     RPL_LUSERCLIENT: function (command) {
         var params = _.clone(command.params);
         params.shift();
-        genericNotice.call(this, command, params.join(', ') + ' ' + command.trailing);
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
     },
 
     RPL_LUSEROP: function (command) {
         var params = _.clone(command.params);
         params.shift();
-        genericNotice.call(this, command, params.join(', ') + ' ' + command.trailing);
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
     },
 
     RPL_LUSERUNKNOWN: function (command) {
         var params = _.clone(command.params);
         params.shift();
-        genericNotice.call(this, command, params.join(', ') + ' ' + command.trailing);
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
     },
 
     RPL_LUSERCHANNELS: function (command) {
         var params = _.clone(command.params);
         params.shift();
-        genericNotice.call(this, command, params.join(', ') + ' ' + command.trailing);
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
     },
 
     RPL_LUSERME: function (command) {
         var params = _.clone(command.params);
         params.shift();
-        genericNotice.call(this, command, params.join(', ') + ' ' + command.trailing);
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
     },
 
     RPL_LOCALUSERS: function (command) {
         var params = _.clone(command.params);
         params.shift();
-        genericNotice.call(this, command, params.join(', ') + ' ' + command.trailing);
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
     },
 
     RPL_GLOBALUSERS: function (command) {
         var params = _.clone(command.params);
         params.shift();
-        genericNotice.call(this, command, params.join(', ') + ' ' + command.trailing);
-    }
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_HOSTCLOACKING: function (command) {
+        genericNotice.call(this, command, command.params[1] + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_YOURHOST: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_CREATED: function (command) {
+        this.irc_connection.emit('server '  + this.irc_connection.irc_host.hostname + ' server', {
+            motd: command.params[command.params.length - 1] + '\n'
+        });
+    },
+
+    RPL_MYINFO: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_SNOMASK: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_NOWOPER: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_TRACELINK: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_TRACECONNECTING: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_TRACEHANDSHAKE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_TRACEUNKNOWN: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_TRACEOPERATOR: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_TRACEUSER: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_TRACESERVER: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_TRACESERVICE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_TRACENEWTYPE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_TRACECLASS: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_TRACERECONNECT: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSLINKINFO: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSCOMMANDS: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSCLINE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSNLINE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSILINE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSKLINE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSPLINE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSYLINE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_ENDOFSTATS: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSBLINE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_UMODEIS: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_SQLINE_NICK: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATS_E: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATS_D: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_SPAMFILTER: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_SERVICEINFO: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_ENDOFSERVICES: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_SERVICE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_SERVLIST: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_SERVLISTEND: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSLLINE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSUPTIME: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSOLINE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSHLINE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSSLINE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSGLINE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSXLINE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSULINE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_STATSDEBUG: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_ADMINME: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_ADMINLOC1: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_ADMINLOC2: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_ADMINEMAIL: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_HELPHDR: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_HELPOP: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_HELPTLR: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_ZIPSTATS: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_WHOISSPECIAL: function (command) {
+        this.irc_connection.emit('user ' + command.params[1] + ' whoisswhois', {
+            nick: command.params[1],
+            msg: command.params[command.params.length - 1]
+        });
+    },
+
+    'RPL_WHOISACTUALLY': function (command) {
+        this.irc_connection.emit('user ' + command.params[1] + ' whoishost', {
+            nick: command.params[1],
+            msg: command.params[command.params.length - 1]
+        });
+    },
+
+    RPL_INFO: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_ENDINFO: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_NOSUCHSERVER: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    ERR_NOADMININFO: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    ERR_NOTENOUGHPARAMS: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    RPL_WALLOPS: function (command) {
+        this.irc_connection.emit('user ' + this.irc_connection.nick + ' wallops', {
+            from_server: false,
+            nick: command.nick,
+            ident: command.ident,
+            hostname: command.hostname,
+            msg: command.params[command.params.length - 1]
+        });
+    },
+
+    ERR_NOOPERHOST: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    ERR_UNKNOWNMODE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    ERR_CANTKILLSERVER: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    ERR_ISCHANSERVICE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+
+    ERR_ISREALSERVICE: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
+    ERR_CANNOTDOCOMMAND: function (command) {
+        var params = _.clone(command.params);
+        params.shift();
+        genericNotice.call(this, command, params.slice(0, -1).join(', ') + ' ' + command.params[command.params.length - 1]);
+    },
 };
 
 
@@ -973,7 +1476,7 @@ function genericNotice (command, msg, is_error) {
     if (typeof is_error !== 'boolean')
         is_error = true;
 
-    this.irc_connection.clientEvent('notice', {
+    this.irc_connection.emit('user ' + command.prefix + ' notice', {
         from_server: true,
         nick: command.prefix,
         ident: '',

@@ -20,6 +20,9 @@ var IrcUser = function (irc_connection, nick) {
         whoishost:      onWhoisHost,
         whoissecure:    onWhoisSecure,
         whoisaccount:   onWhoisAccount,
+        whoishelpop:    onWhoisHelpOp,
+        whoisbot:       onWhoisBot,
+        whoisswhois:    onWhoisSwhois,
         endofwhois:     onWhoisEnd,
         whowas:         onWhoWas,
         endofwhowas:    onWhoWasEnd,
@@ -27,8 +30,10 @@ var IrcUser = function (irc_connection, nick) {
         notice:         onNotice,
         ctcp_response:  onCtcpResponse,
         privmsg:        onPrivmsg,
+        action:         onAction,
         ctcp_request:   onCtcpRequest,
-        mode:           onMode
+        mode:           onMode,
+        wallops:        onWallops
     };
     EventBinder.bindIrcEvents('user ' + this.nick, this.irc_events, this, irc_connection);
 };
@@ -71,7 +76,7 @@ function onQuit(event) {
         nick: event.nick,
         ident: event.ident,
         hostname: event.hostname,
-        message: event.trailing,
+        message: event.message,
         time: event.time
     });
 }
@@ -168,6 +173,30 @@ function onWhoisAccount(event) {
     });
 }
 
+function onWhoisHelpOp(event) {
+    this.irc_connection.clientEvent('whois', {
+        nick: event.nick,
+        msg: event.msg,
+        end: false
+    });
+}
+
+function onWhoisBot(event) {
+    this.irc_connection.clientEvent('whois', {
+        nick: event.nick,
+        msg: event.msg,
+        end: false
+    });
+}
+
+function onWhoisSwhois(event) {
+    this.irc_connection.clientEvent('whois', {
+        nick: event.nick,
+        msg: event.msg,
+        end: false
+    });
+}
+
 function onWhoisEnd(event) {
     this.irc_connection.clientEvent('whois', {
         nick: event.nick,
@@ -201,14 +230,21 @@ function onWhoWasEnd(event) {
 }
 
 function onNotice(event) {
-    this.irc_connection.clientEvent('notice', {
-        from_server: event.from_server,
-        nick: event.nick,
-        ident: event.ident,
-        hostname: event.hostname,
-        target: event.target,
-        msg: event.msg,
-        time: event.time
+   var that = this;
+   global.modules.emit('irc user notice', {
+       connection: this.irc_connection,
+       irc_event: event
+    })
+    .done(function() {
+        that.irc_connection.clientEvent('notice', {
+            from_server: event.from_server,
+            nick: event.nick,
+            ident: event.ident,
+            hostname: event.hostname,
+            target: event.target,
+            msg: event.msg,
+            time: event.time
+        });
     });
 }
 
@@ -217,7 +253,7 @@ function onCtcpResponse(event) {
         nick: event.nick,
         ident: event.ident,
         hostname: event.hostname,
-        channel: event.channel,
+        target: event.target,
         msg: event.msg,
         time: event.time
     });
@@ -235,7 +271,26 @@ function onPrivmsg(event) {
             nick: event.nick,
             ident: event.ident,
             hostname: event.hostname,
-            channel: event.channel,
+            target: event.target,
+            msg: event.msg,
+            time: event.time
+        });
+    });
+}
+
+function onAction(event) {
+    var that = this;
+
+    global.modules.emit('irc action', {
+        connection: this.irc_connection,
+        irc_event: event
+    })
+    .done(function() {
+        that.irc_connection.clientEvent('action', {
+            nick: event.nick,
+            ident: event.ident,
+            hostname: event.hostname,
+            target: event.target,
             msg: event.msg,
             time: event.time
         });
@@ -259,6 +314,16 @@ function onMode(event) {
         target: event.target,
         nick: event.nick,
         modes: event.modes,
+        time: event.time
+    });
+}
+
+function onWallops(event) {
+    this.irc_connection.clientEvent('wallops', {
+        nick: event.nick,
+        ident: event.ident,
+        hostname: event.hostname,
+        msg: event.msg,
         time: event.time
     });
 }
