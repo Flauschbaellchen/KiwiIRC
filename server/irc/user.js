@@ -1,5 +1,4 @@
-var util    = require('util'),
-    EventBinder  = require('./eventbinder.js');
+var EventBinder  = require('./eventbinder.js');
 
 var IrcUser = function (irc_connection, nick) {
     this.irc_connection = irc_connection;
@@ -85,7 +84,7 @@ function onWhoisUser(event) {
     this.irc_connection.clientEvent('whois', {
         nick: event.nick,
         ident: event.ident,
-        host: event.host,
+        hostname: event.host,
         msg: event.msg,
         end: false
     });
@@ -209,7 +208,7 @@ function onWhoWas(event) {
     this.irc_connection.clientEvent('whowas', {
         nick: event.nick,
         ident: event.user,
-        host: event.host,
+        hostname: event.host,
         real_name: event.real_name,
         end: false
     });
@@ -230,13 +229,14 @@ function onWhoWasEnd(event) {
 }
 
 function onNotice(event) {
-   var that = this;
-   global.modules.emit('irc user notice', {
-       connection: this.irc_connection,
-       irc_event: event
+    var that = this;
+    global.modules.emit('irc user notice', {
+        connection: this.irc_connection,
+        irc_event: event
     })
     .done(function() {
-        that.irc_connection.clientEvent('notice', {
+        that.irc_connection.clientEvent('message', {
+            type: 'notice',
             from_server: event.from_server,
             nick: event.nick,
             ident: event.ident,
@@ -267,7 +267,8 @@ function onPrivmsg(event) {
         irc_event: event
     })
     .done(function() {
-        that.irc_connection.clientEvent('msg', {
+        that.irc_connection.clientEvent('message', {
+            type: 'message',
             nick: event.nick,
             ident: event.ident,
             hostname: event.hostname,
@@ -286,7 +287,8 @@ function onAction(event) {
         irc_event: event
     })
     .done(function() {
-        that.irc_connection.clientEvent('action', {
+        that.irc_connection.clientEvent('message', {
+            type: 'action',
             nick: event.nick,
             ident: event.ident,
             hostname: event.hostname,

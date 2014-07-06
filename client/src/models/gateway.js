@@ -39,7 +39,7 @@ _kiwi.model.Gateway = function () {
         this.set('kiwi_server', _kiwi.app.kiwi_server);
 
         this.socket = new EngineioTools.ReconnectingSocket(this.get('kiwi_server'), {
-            transports: _kiwi.app.server_settings.transports || ['websocket', 'polling'],
+            transports: _kiwi.app.server_settings.transports || ['polling', 'websocket'],
             path: _kiwi.app.get('base_path') + '/transport',
             reconnect_max_attempts: 5,
             reconnect_delay: 2000
@@ -224,10 +224,26 @@ _kiwi.model.Gateway = function () {
                 event_name: command,
                 event_data: data
             });
+
+            // Some events trigger a more in-depth event name
+            if (command == 'message' && data.type) {
+                that.trigger('connection:' + data.connection_id.toString(), {
+                    event_name: 'message:' + data.type,
+                    event_data: data
+                });
+            }
+
+            if (command == 'channel' && data.type) {
+                that.trigger('connection:' + data.connection_id.toString(), {
+                    event_name: 'channel:' + data.type,
+                    event_data: data
+                });
+            }
         }
 
         // Trigger the global events
-        that.trigger(command, data);
+        that.trigger('connection', {event_name: command, event_data: data});
+        that.trigger('connection:' + command, data);
     };
 
     this.rpcCall = function(method, connection_id) {
@@ -333,11 +349,20 @@ _kiwi.model.Gateway = function () {
     /**
     *   Leaves a channel
     *   @param  {String}    channel     The channel to part
+    *   @param  {String}    message     Optional part message
     *   @param  {Function}  callback    A callback function
     */
-    this.part = function (connection_id, channel, callback) {
+    this.part = function (connection_id, channel, message, callback) {
+        "use strict";
+
+        // The message param is optional, so juggle args if it is missing
+        if (typeof arguments[2] === 'function') {
+            callback = arguments[2];
+            message = undefined;
+        }
         var args = {
-            channel: channel
+            channel: channel,
+            message: message
         };
 
         this.rpcCall('irc.part', connection_id, args, callback);

@@ -62,9 +62,13 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
             network, hour, pm;
 
         // Nick highlight detecting
-        if ((new RegExp('(^|\\W)(' + escapeRegex(_kiwi.app.connections.active_connection.get('nick')) + ')(\\W|$)', 'i')).test(msg.msg)) {
-            is_highlight = true;
-            msg_css_classes += ' highlight';
+        var nick = _kiwi.app.connections.active_connection.get('nick');
+        if ((new RegExp('(^|\\W)(' + escapeRegex(nick) + ')(\\W|$)', 'i')).test(msg.msg)) {
+            // Do not highlight the user's own input
+            if (msg.nick.localeCompare(nick) !== 0) {
+                is_highlight = true;
+                msg_css_classes += ' highlight';
+            }
         }
 
         // Escape any HTML that may be in here
@@ -83,6 +87,10 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
         msg.msg = msg.msg.replace(/(([A-Za-z][A-Za-z0-9\-]*\:\/\/)|(www\.))([\w.\-]+)([a-zA-Z]{2,6})(:[0-9]+)?(\/[\w#!:.?$'()[\]*,;~+=&%@!\-\/]*)?/gi, function (url) {
             var nice = url,
                 extra_html = '';
+
+            if (url.match(/^javascript:/)) {
+                return url;
+            }
 
             // Add the http if no protoocol was found
             if (url.match(/^www\./)) {
@@ -158,83 +166,91 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
                 msg.time_string = _kiwi.global.i18n.translate('client_views_panel_timestamp_am').fetch(hour + ":" + msg.time.getMinutes().toString().lpad(2, "0") + ":" + msg.time.getSeconds().toString().lpad(2, "0"));
             }
         }
-        line_msg = '<div class="msg <%= type %> <%= msg_css_classes %>"><div class="time"><%- time_string %></div><div class="nick" style="<%= nick_style %>"><%- nick %></div><div class="text" style="<%= style %>"><%= msg %> </div></div>';
-        this.$messages.append(_.template(line_msg, msg));
 
-        // Activity/alerts based on the type of new message
-        if (msg.type.match(/^action /)) {
-            this.alert('action');
+        _kiwi.global.events.emit('message:display', {panel: this.model, message: msg})
+        .done(_.bind(function() {
+            // Format the nick to the config defined format
+            var display_obj = _.clone(msg);
+            display_obj.nick = styleText('message_nick', {nick: msg.nick, prefix: msg.nick_prefix || ''});
 
-        } else if (is_highlight) {
-            _kiwi.app.view.alertWindow('* ' + _kiwi.global.i18n.translate('client_views_panel_activity').fetch());
-            _kiwi.app.view.favicon.newHighlight();
-            _kiwi.app.view.playSound('highlight');
-            _kiwi.app.view.showNotification(this.model.get('name'), msg.msg);
-            this.alert('highlight');
+            line_msg = '<div class="msg <%= type %> <%= msg_css_classes %>"><div class="time"><%- time_string %></div><div class="nick" style="<%= nick_style %>"><%- nick %></div><div class="text" style="<%= style %>"><%= msg %> </div></div>';
+            this.$messages.append($(_.template(line_msg, display_obj)).data('message', msg));
 
-        } else {
-            // If this is the active panel, send an alert out
-            if (this.model.isActive()) {
+            // Activity/alerts based on the type of new message
+            if (msg.type.match(/^action /)) {
+                this.alert('action');
+
+            } else if (is_highlight) {
                 _kiwi.app.view.alertWindow('* ' + _kiwi.global.i18n.translate('client_views_panel_activity').fetch());
-            }
-            this.alert('activity');
-        }
-
-        if (this.model.isQuery() && !this.model.isActive()) {
-            _kiwi.app.view.alertWindow('* ' + _kiwi.global.i18n.translate('client_views_panel_activity').fetch());
-
-            // Highlights have already been dealt with above
-            if (!is_highlight) {
                 _kiwi.app.view.favicon.newHighlight();
-            }
+                _kiwi.app.view.playSound('highlight');
+                _kiwi.app.view.showNotification(this.model.get('name'), msg.msg);
+                this.alert('highlight');
 
-            _kiwi.app.view.showNotification(this.model.get('name'), msg.msg);
-            _kiwi.app.view.playSound('highlight');
-        }
-
-        // Update the activity counters
-        (function () {
-            // Only inrement the counters if we're not the active panel
-            if (this.model.isActive()) return;
-
-            var $act = this.model.tab.find('.activity'),
-                count_all_activity = _kiwi.global.settings.get('count_all_activity'),
-                exclude_message_types;
-
-            // Set the default config value
-            if (typeof count_all_activity === 'undefined') {
-                count_all_activity = false;
-            }
-
-            // Do not increment the counter for these message types
-            exclude_message_types = [
-                'action join',
-                'action quit',
-                'action part',
-                'action kick',
-                'action nick',
-                'action mode'
-            ];
-
-            if (count_all_activity || _.indexOf(exclude_message_types, msg.type) === -1) {
-                $act.text((parseInt($act.text(), 10) || 0) + 1);
-            }
-
-            if ($act.text() === '0') {
-                $act.addClass('zero');
             } else {
-                $act.removeClass('zero');
+                // If this is the active panel, send an alert out
+                if (this.model.isActive()) {
+                    _kiwi.app.view.alertWindow('* ' + _kiwi.global.i18n.translate('client_views_panel_activity').fetch());
+                }
+                this.alert('activity');
             }
-        }).apply(this);
 
-        if(this.model.isActive()) this.scrollToBottom();
+            if (this.model.isQuery() && !this.model.isActive()) {
+                _kiwi.app.view.alertWindow('* ' + _kiwi.global.i18n.translate('client_views_panel_activity').fetch());
 
-        // Make sure our DOM isn't getting too large (Acts as scrollback)
-        this.msg_count++;
-        if (this.msg_count > (parseInt(_kiwi.global.settings.get('scrollback'), 10) || 250)) {
-            $('.msg:first', this.$messages).remove();
-            this.msg_count--;
-        }
+                // Highlights have already been dealt with above
+                if (!is_highlight) {
+                    _kiwi.app.view.favicon.newHighlight();
+                }
+
+                _kiwi.app.view.showNotification(this.model.get('name'), msg.msg);
+                _kiwi.app.view.playSound('highlight');
+            }
+
+            // Update the activity counters
+            (function () {
+                // Only inrement the counters if we're not the active panel
+                if (this.model.isActive()) return;
+
+                var $act = this.model.tab.find('.activity'),
+                    count_all_activity = _kiwi.global.settings.get('count_all_activity'),
+                    exclude_message_types;
+
+                // Set the default config value
+                if (typeof count_all_activity === 'undefined') {
+                    count_all_activity = false;
+                }
+
+                // Do not increment the counter for these message types
+                exclude_message_types = [
+                    'action join',
+                    'action quit',
+                    'action part',
+                    'action kick',
+                    'action nick',
+                    'action mode'
+                ];
+
+                if (count_all_activity || _.indexOf(exclude_message_types, msg.type) === -1) {
+                    $act.text((parseInt($act.text(), 10) || 0) + 1);
+                }
+
+                if ($act.text() === '0') {
+                    $act.addClass('zero');
+                } else {
+                    $act.removeClass('zero');
+                }
+            }).apply(this);
+
+            if(this.model.isActive()) this.scrollToBottom();
+
+            // Make sure our DOM isn't getting too large (Acts as scrollback)
+            this.msg_count++;
+            if (this.msg_count > (parseInt(_kiwi.global.settings.get('scrollback'), 10) || 250)) {
+                $('.msg:first', this.$messages).remove();
+                this.msg_count--;
+            }
+        }, this));
     },
 
 
@@ -253,7 +269,7 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
 
     // Click on a nickname
     nickClick: function (event) {
-        var nick = $(event.currentTarget).text(),
+        var nick = $(event.currentTarget).parent('.msg').data('message').nick,
             members = this.model.get('members'),
             are_we_an_op = !!members.getByNick(_kiwi.app.connections.active_connection.get('nick')).get('is_op'),
             member, query, userbox, menubox;
