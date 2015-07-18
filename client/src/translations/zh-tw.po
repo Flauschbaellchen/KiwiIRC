@@ -708,3 +708,15 @@ msgstr "Block messages from outside this channel"
 msgid "client_views_channelinfo_togglebanlist"
 msgstr "Toggle Banlist"
 
+#: 
+msgid "client_views_controlbox_message"
+msgstr "Send message..."
+
+#: 
+msgid "disconnect_from_server"
+msgstr "This will disconnect from the IRC network. Are you sure?"
+
+#: 
+msgid "client_applets_settings_custom_highlights"
+msgstr "Custom highlights (space separated)"
+

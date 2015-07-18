@@ -13,7 +13,8 @@ var engine       = require('engine.io'),
     winston      = require('winston'),
     Client       = require('./client.js').Client,
     HttpHandler  = require('./httphandler.js').HttpHandler,
-    rehash       = require('./rehash.js');
+    rehash       = require('./rehash.js'),
+    Stats        = require('./stats.js');
 
 
 
@@ -84,24 +85,37 @@ var WebListener = module.exports = function (web_config) {
     });
 
     hs.on('request', function(req, res){
-        var transport_url = (global.config.http_base_path || '') + '/transport';
+        global.modules.emit('http request', {request: req, response: res})
+        .then(function httpRequest() {
+            var base_path = (global.config.http_base_path || ''),
+                transport_url;
 
-        // engine.io can sometimes "loose" the clients remote address. Keep note of it
-        req.meta = {
-            remote_address: req.connection.remoteAddress
-        };
+            // Trim off any trailing slashes
+            if (base_path.substr(base_path.length - 1) === '/') {
+                base_path = base_path.substr(0, base_path.length - 1);
+            }
+            transport_url = base_path + '/transport';
 
-        // If the request is for our transport, pass it onto engine.io
-        if (req.url.toLowerCase().indexOf(transport_url.toLowerCase()) === 0) {
-            that.ws.handleRequest(req, res);
-        } else {
-            http_handler.serve(req, res);
-        }
+            Stats.incr('http.request');
 
+            // engine.io can sometimes "loose" the clients remote address. Keep note of it
+            req.meta = {
+                remote_address: req.connection.remoteAddress
+            };
+
+            // If the request is for our transport, pass it onto engine.io
+            if (req.url.toLowerCase().indexOf(transport_url.toLowerCase()) === 0) {
+                that.ws.handleRequest(req, res);
+            } else {
+                http_handler.serve(req, res);
+            }
+        });
 
     });
 
     this.ws.on('connection', function(socket) {
+        Stats.incr('http.websocket');
+
         initialiseSocket(socket, function(err, authorised) {
             var client;
 
@@ -110,7 +124,7 @@ var WebListener = module.exports = function (web_config) {
                 return;
             }
 
-            client = new Client(socket);
+            client = new Client(socket, {server_config: web_config});
             client.on('dispose', function () {
                 that.emit('client_dispose', this);
             });
@@ -163,6 +177,12 @@ function initialiseSocket(socket, callback) {
 
         // We're sent from a whitelisted proxy, replace the hosts
         address = request.headers[global.config.http_proxy_ip_header || 'x-forwarded-for'];
+
+        // Multiple reverse proxies will have a comma delimited list of IPs. We only need the first
+        address = address.split(',')[0].trim();
+
+        // Some reverse proxies (IIS) may include the port, so lets remove that
+        address = (address || '').split(':')[0];
     }
 
     socket.meta.real_address = address;

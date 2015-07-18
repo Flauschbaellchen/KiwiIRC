@@ -46,15 +46,14 @@ ClientCommands.prototype.addRpcEvents = function(client, rpc) {
             client: client,
             connection: connection
         })
-        .done(function() {
+        .then(function() {
             // Listeners expect arguments in a (connection, callback, args..n) format, so preppend
             // the connection + callback
             fn_args = rpc_args.slice(0);
             fn_args.unshift(connection, callback);
 
             the_fn.apply(client, fn_args);
-        })
-        .prevented(function() {
+        }, function() {
             // The RPC call was prevented from running by a module
         });
     };
@@ -183,10 +182,7 @@ var listeners = {
 
 
     quit: function (irc_connection, callback, args) {
-        websocket.ircConnection.end('QUIT :' + args.message + '\r\n');
-        websocket.sentQUIT = true;
-        websocket.ircConnection.destroySoon();
-        websocket.disconnect();
+        irc_connection.end('QUIT :' + (args.message||''));
     },
 
 

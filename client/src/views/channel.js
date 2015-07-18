@@ -7,6 +7,7 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
         }
         return _.extend({}, parent_events, {
             'click .msg .nick' : 'nickClick',
+            'click .msg .inline-nick' : 'nickClick',
             "click .chan": "chanClick",
             'click .media .open': 'mediaClick',
             'mouseenter .msg .nick': 'msgEnter',
@@ -22,10 +23,21 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
         this.$el.append(this.$messages);
 
         this.model.bind('change:topic', this.topic, this);
+        this.model.bind('change:topic_set_by', this.topicSetBy, this);
 
         if (this.model.get('members')) {
+            // When we join the memberlist, we have officially joined the channel
             this.model.get('members').bind('add', function (member) {
                 if (member.get('nick') === this.model.collection.network.get('nick')) {
+                    this.$el.find('.initial_loader').slideUp(function () {
+                        $(this).remove();
+                    });
+                }
+            }, this);
+
+            // Memberlist reset with a new nicklist? Consider we have joined
+            this.model.get('members').bind('reset', function(members) {
+                if (members.getByNick(this.model.collection.network.get('nick'))) {
                     this.$el.find('.initial_loader').slideUp(function () {
                         $(this).remove();
                     });
@@ -53,138 +65,31 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
     },
 
 
-    newMsg: function (msg) {
-        var re, line_msg,
-            nick_colour_hex, nick_hex, is_highlight, msg_css_classes = '',
-            time_difference,
-            sb = this.model.get('scrollback'),
-            prev_msg = sb[sb.length-2],
-            network, hour, pm;
+    newMsg: function(msg) {
 
-        // Nick highlight detecting
-        var nick = _kiwi.app.connections.active_connection.get('nick');
-        if ((new RegExp('(^|\\W)(' + escapeRegex(nick) + ')(\\W|$)', 'i')).test(msg.msg)) {
-            // Do not highlight the user's own input
-            if (msg.nick.localeCompare(nick) !== 0) {
-                is_highlight = true;
-                msg_css_classes += ' highlight';
-            }
-        }
-
-        // Escape any HTML that may be in here
-        msg.msg =  $('<div />').text(msg.msg).html();
-
-        // Make the channels clickable
-        if ((network = this.model.get('network'))) {
-            re = new RegExp('(^|\\s)([' + escapeRegex(network.get('channel_prefix')) + '][^ ,\\007]+)', 'g');
-            msg.msg = msg.msg.replace(re, function (m1, m2) {
-                return m2 + '<a class="chan" data-channel="' + _.escape(m1.trim()) + '">' + _.escape(m1.trim()) + '</a>';
-            });
-        }
-
-
-        // Parse any links found
-        msg.msg = msg.msg.replace(/(([A-Za-z][A-Za-z0-9\-]*\:\/\/)|(www\.))([\w.\-]+)([a-zA-Z]{2,6})(:[0-9]+)?(\/[\w#!:.?$'()[\]*,;~+=&%@!\-\/]*)?/gi, function (url) {
-            var nice = url,
-                extra_html = '';
-
-            if (url.match(/^javascript:/)) {
-                return url;
-            }
-
-            // Add the http if no protoocol was found
-            if (url.match(/^www\./)) {
-                url = 'http://' + url;
-            }
-
-            // Shorten the displayed URL if it's going to be too long
-            if (nice.length > 100) {
-                nice = nice.substr(0, 100) + '...';
-            }
-
-            // Get any media HTML if supported
-            extra_html = _kiwi.view.MediaMessage.buildHtml(url);
-
-            // Make the link clickable
-            return '<a class="link_ext" target="_blank" rel="nofollow" href="' + url + '">' + nice + '</a>' + extra_html;
-        });
-
-
-        // Convert IRC formatting into HTML formatting
-        msg.msg = formatIRCMsg(msg.msg);
-
-        // Replace text emoticons with images
-        if (_kiwi.global.settings.get('show_emoticons')) {
-            msg.msg = emoticonFromText(msg.msg);
-        }
-
-        // Add some colours to the nick (Method based on IRSSIs nickcolor.pl)
-        nick_colour_hex = (function (nick) {
-            var nick_int = 0, rgb;
-
-            _.map(nick.split(''), function (i) { nick_int += i.charCodeAt(0); });
-            rgb = hsl2rgb(nick_int % 255, 70, 35);
-            rgb = rgb[2] | (rgb[1] << 8) | (rgb[0] << 16);
-
-            return '#' + rgb.toString(16);
-        })(msg.nick);
-
-        msg.nick_style = 'color:' + nick_colour_hex + ';';
-
-        // Generate a hex string from the nick to be used as a CSS class name
-        nick_hex = msg.nick_css_class = '';
-        if (msg.nick) {
-            _.map(msg.nick.split(''), function (char) {
-                nick_hex += char.charCodeAt(0).toString(16);
-            });
-            msg_css_classes += ' nick_' + nick_hex;
-        }
-
-        if (prev_msg) {
-            // Time difference between this message and the last (in minutes)
-            time_difference = (msg.time.getTime() - prev_msg.time.getTime())/1000/60;
-            if (prev_msg.nick === msg.nick && time_difference < 1) {
-                msg_css_classes += ' repeated_nick';
-            }
-        }
-
-        // Build up and add the line
-        msg.msg_css_classes = msg_css_classes;
-        if (_kiwi.global.settings.get('use_24_hour_timestamps')) {
-            msg.time_string = msg.time.getHours().toString().lpad(2, "0") + ":" + msg.time.getMinutes().toString().lpad(2, "0") + ":" + msg.time.getSeconds().toString().lpad(2, "0");
-        } else {
-            hour = msg.time.getHours();
-            pm = hour > 11;
-
-            hour = hour % 12;
-            if (hour === 0)
-                hour = 12;
-
-            if (pm) {
-                msg.time_string = _kiwi.global.i18n.translate('client_views_panel_timestamp_pm').fetch(hour + ":" + msg.time.getMinutes().toString().lpad(2, "0") + ":" + msg.time.getSeconds().toString().lpad(2, "0"));
-            } else {
-                msg.time_string = _kiwi.global.i18n.translate('client_views_panel_timestamp_am').fetch(hour + ":" + msg.time.getMinutes().toString().lpad(2, "0") + ":" + msg.time.getSeconds().toString().lpad(2, "0"));
-            }
-        }
+        // Parse the msg object into properties fit for displaying
+        msg = this.generateMessageDisplayObj(msg);
 
         _kiwi.global.events.emit('message:display', {panel: this.model, message: msg})
-        .done(_.bind(function() {
+        .then(_.bind(function() {
+            var line_msg;
+
             // Format the nick to the config defined format
             var display_obj = _.clone(msg);
             display_obj.nick = styleText('message_nick', {nick: msg.nick, prefix: msg.nick_prefix || ''});
 
-            line_msg = '<div class="msg <%= type %> <%= msg_css_classes %>"><div class="time"><%- time_string %></div><div class="nick" style="<%= nick_style %>"><%- nick %></div><div class="text" style="<%= style %>"><%= msg %> </div></div>';
+            line_msg = '<div class="msg <%= type %> <%= css_classes %>"><div class="time"><%- time_string %></div><div class="nick" style="<%= nick_style %>"><%- nick %></div><div class="text" style="<%= style %>"><%= msg %> </div></div>';
             this.$messages.append($(_.template(line_msg, display_obj)).data('message', msg));
 
             // Activity/alerts based on the type of new message
             if (msg.type.match(/^action /)) {
                 this.alert('action');
 
-            } else if (is_highlight) {
+            } else if (msg.is_highlight) {
                 _kiwi.app.view.alertWindow('* ' + _kiwi.global.i18n.translate('client_views_panel_activity').fetch());
                 _kiwi.app.view.favicon.newHighlight();
                 _kiwi.app.view.playSound('highlight');
-                _kiwi.app.view.showNotification(this.model.get('name'), msg.msg);
+                _kiwi.app.view.showNotification(this.model.get('name'), msg.unparsed_msg);
                 this.alert('highlight');
 
             } else {
@@ -199,11 +104,11 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
                 _kiwi.app.view.alertWindow('* ' + _kiwi.global.i18n.translate('client_views_panel_activity').fetch());
 
                 // Highlights have already been dealt with above
-                if (!is_highlight) {
+                if (!msg.is_highlight) {
                     _kiwi.app.view.favicon.newHighlight();
                 }
 
-                _kiwi.app.view.showNotification(this.model.get('name'), msg.msg);
+                _kiwi.app.view.showNotification(this.model.get('name'), msg.unparsed_msg);
                 _kiwi.app.view.playSound('highlight');
             }
 
@@ -212,9 +117,8 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
                 // Only inrement the counters if we're not the active panel
                 if (this.model.isActive()) return;
 
-                var $act = this.model.tab.find('.activity'),
-                    count_all_activity = _kiwi.global.settings.get('count_all_activity'),
-                    exclude_message_types;
+                var count_all_activity = _kiwi.global.settings.get('count_all_activity'),
+                    exclude_message_types, new_count;
 
                 // Set the default config value
                 if (typeof count_all_activity === 'undefined') {
@@ -232,14 +136,11 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
                 ];
 
                 if (count_all_activity || _.indexOf(exclude_message_types, msg.type) === -1) {
-                    $act.text((parseInt($act.text(), 10) || 0) + 1);
+                    new_count = this.model.get('activity_counter') || 0;
+                    new_count++;
+                    this.model.set('activity_counter', new_count);
                 }
 
-                if ($act.text() === '0') {
-                    $act.addClass('zero');
-                } else {
-                    $act.removeClass('zero');
-                }
             }).apply(this);
 
             if(this.model.isActive()) this.scrollToBottom();
@@ -254,57 +155,335 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
     },
 
 
+    // Let nicks be clickable + colourise within messages
+    parseMessageNicks: function(word, colourise) {
+        var members, member, nick, nick_re, style = '';
+
+        if (!(members = this.model.get('members')) || !(member = members.getByNick(word))) {
+            return;
+        }
+
+        nick = member.get('nick');
+
+        if (colourise !== false) {
+            // Use the nick from the member object so the style matches the letter casing
+            style = this.getNickStyles(nick).asCssString();
+        }
+        nick_re = new RegExp('(.*)\\b(' + _kiwi.global.utils.escapeRegex(nick) + ')\\b(.*)', 'i');
+        return word.replace(nick_re, function (__, before, nick_in_orig_case, after) {
+            return _.escape(before)
+                + '<span class="inline-nick" style="' + style + '; cursor:pointer" data-nick="' + _.escape(nick) + '">'
+                + _.escape(nick_in_orig_case)
+                + '</span>'
+                + _.escape(after);
+        });
+    },
+
+
+    // Make channels clickable
+    parseMessageChannels: function(word) {
+        var re,
+            parsed = false,
+            network = this.model.get('network');
+
+        if (!network) {
+            return;
+        }
+
+        re = new RegExp('(^|\\s)([' + escapeRegex(network.get('channel_prefix')) + '][^ ,\\007]+)', 'g');
+
+        if (!word.match(re)) {
+            return parsed;
+        }
+
+        parsed = word.replace(re, function (m1, m2) {
+            return m2 + '<a class="chan" data-channel="' + _.escape(m1.trim()) + '">' + _.escape(m1.trim()) + '</a>';
+        });
+
+        return parsed;
+    },
+
+
+    parseMessageUrls: function(word) {
+        var found_a_url = false,
+            parsed_url;
+
+        parsed_url = word.replace(/^(([A-Za-z][A-Za-z0-9\-]*\:\/\/)|(www\.))([\w.\-]+)([a-zA-Z]{2,6})(:[0-9]+)?(\/[\w!:.?$'()[\]*,;~+=&%@!\-\/]*)?(#.*)?$/gi, function (url) {
+            var nice = url,
+                extra_html = '';
+
+            // Don't allow javascript execution
+            if (url.match(/^javascript:/)) {
+                return url;
+            }
+
+            found_a_url = true;
+
+            // Add the http if no protoocol was found
+            if (url.match(/^www\./)) {
+                url = 'http://' + url;
+            }
+
+            // Shorten the displayed URL if it's going to be too long
+            if (nice.length > 100) {
+                nice = nice.substr(0, 100) + '...';
+            }
+
+            // Get any media HTML if supported
+            extra_html = _kiwi.view.MediaMessage.buildHtml(url);
+
+            // Make the link clickable
+            return '<a class="link_ext" target="_blank" rel="nofollow" href="' + url.replace(/"/g, '%22') + '">' + _.escape(nice) + '</a>' + extra_html;
+        });
+
+        return found_a_url ? parsed_url : false;
+    },
+
+
+    // Generate a css style for a nick
+    getNickStyles: (function () {
+
+        // Get a colour from a nick (Method based on IRSSIs nickcolor.pl)
+        return function (nick) {
+            var nick_lightness, nick_int, rgb;
+
+            // Get the lightness option from the theme. Defaults to 35.
+            nick_lightness = (_.find(_kiwi.app.themes, function (theme) {
+                return theme.name.toLowerCase() === _kiwi.global.settings.get('theme').toLowerCase();
+            }) || {}).nick_lightness;
+
+            if (typeof nick_lightness !== 'number') {
+                nick_lightness = 35;
+            } else {
+                nick_lightness = Math.max(0, Math.min(100, nick_lightness));
+            }
+
+            nick_int = _.reduce(nick.split(''), sumCharCodes, 0);
+            rgb = hsl2rgb(nick_int % 256, 70, nick_lightness);
+
+            return {
+                color: '#' + ('000000' + (rgb[2] | (rgb[1] << 8) | (rgb[0] << 16)).toString(16)).substr(-6),
+                asCssString: asCssString
+            };
+        };
+
+        function toCssProperty(result, item, key) {
+            return result + (typeof item === 'string' || typeof item === 'number' ? key + ':' + item + ';' : '');
+        }
+        function asCssString() {
+            return _.reduce(this, toCssProperty, '');
+        }
+        function sumCharCodes(total, i) {
+            return total + i.charCodeAt(0);
+        }
+    }()),
+
+
+    // Takes an IRC message object and parses it for displaying
+    generateMessageDisplayObj: function(msg) {
+        var nick_hex, time_difference,
+            message_words,
+            sb = this.model.get('scrollback'),
+            nick,
+            regexpStr,
+            prev_msg = sb[sb.length-2],
+            hour, pm, am_pm_locale_key;
+
+        // Clone the msg object so we dont modify the original
+        msg = _.clone(msg);
+
+        // Defaults
+        msg.css_classes = '';
+        msg.nick_style = '';
+        msg.is_highlight = false;
+        msg.time_string = '';
+
+        // Nick + custom highlight detecting
+        nick = _kiwi.app.connections.active_connection.get('nick');
+        if (msg.nick.localeCompare(nick) !== 0) {
+            // Build a list of all highlights and escape them for regex
+            regexpStr = _.chain((_kiwi.global.settings.get('custom_highlights') || '').split(/[\s,]+/))
+                .compact()
+                .concat(nick)
+                .map(escapeRegex)
+                .join('|')
+                .value();
+
+            if (msg.msg.search(new RegExp('(\\b|\\W|^)(' + regexpStr + ')(\\b|\\W|$)', 'i')) > -1) {
+                msg.is_highlight = true;
+                msg.css_classes += ' highlight';
+            }
+        }
+
+        message_words = msg.msg.split(' ');
+        message_words = _.map(message_words, function(word) {
+            var parsed_word;
+
+            parsed_word = this.parseMessageUrls(word);
+            if (typeof parsed_word === 'string') return parsed_word;
+
+            parsed_word = this.parseMessageChannels(word);
+            if (typeof parsed_word === 'string') return parsed_word;
+
+            parsed_word = this.parseMessageNicks(word, (msg.type === 'privmsg'));
+            if (typeof parsed_word === 'string') return parsed_word;
+
+            parsed_word = _.escape(word);
+
+            // Replace text emoticons with images
+            if (_kiwi.global.settings.get('show_emoticons')) {
+                parsed_word = emoticonFromText(parsed_word);
+            }
+
+            return parsed_word;
+        }, this);
+
+        msg.unparsed_msg = msg.msg;
+        msg.msg = message_words.join(' ');
+
+        // Convert IRC formatting into HTML formatting
+        msg.msg = formatIRCMsg(msg.msg);
+
+        // Add some style to the nick
+        msg.nick_style = this.getNickStyles(msg.nick).asCssString();
+
+        // Generate a hex string from the nick to be used as a CSS class name
+        nick_hex = '';
+        if (msg.nick) {
+            _.map(msg.nick.split(''), function (char) {
+                nick_hex += char.charCodeAt(0).toString(16);
+            });
+            msg.css_classes += ' nick_' + nick_hex;
+        }
+
+        if (prev_msg) {
+            // Time difference between this message and the last (in minutes)
+            time_difference = (msg.time.getTime() - prev_msg.time.getTime())/1000/60;
+            if (prev_msg.nick === msg.nick && time_difference < 1) {
+                msg.css_classes += ' repeated_nick';
+            }
+        }
+
+        // Build up and add the line
+        if (_kiwi.global.settings.get('use_24_hour_timestamps')) {
+            msg.time_string = msg.time.getHours().toString().lpad(2, "0") + ":" + msg.time.getMinutes().toString().lpad(2, "0") + ":" + msg.time.getSeconds().toString().lpad(2, "0");
+        } else {
+            hour = msg.time.getHours();
+            pm = hour > 11;
+
+            hour = hour % 12;
+            if (hour === 0)
+                hour = 12;
+
+            am_pm_locale_key = pm ?
+                'client_views_panel_timestamp_pm' :
+                'client_views_panel_timestamp_am';
+
+            msg.time_string = translateText(am_pm_locale_key, hour + ":" + msg.time.getMinutes().toString().lpad(2, "0") + ":" + msg.time.getSeconds().toString().lpad(2, "0"));
+        }
+
+        return msg;
+    },
+
+
     topic: function (topic) {
         if (typeof topic !== 'string' || !topic) {
             topic = this.model.get("topic");
         }
 
-        this.model.addMsg('', styleText('channel_topic', {text: translateText('client_views_channel_topic', [this.model.get('name'), topic]), channel: this.model.get('name')}), 'topic');
+        this.model.addMsg('', styleText('channel_topic', {text: topic, channel: this.model.get('name')}), 'topic');
 
         // If this is the active channel then update the topic bar
-        if (_kiwi.app.panels().active === this) {
-            _kiwi.app.topicbar.setCurrentTopic(this.model.get("topic"));
+        if (_kiwi.app.panels().active === this.model) {
+            _kiwi.app.topicbar.setCurrentTopicFromChannel(this.model);
+        }
+    },
+
+    topicSetBy: function (topic) {
+        // If this is the active channel then update the topic bar
+        if (_kiwi.app.panels().active === this.model) {
+            _kiwi.app.topicbar.setCurrentTopicFromChannel(this.model);
         }
     },
 
     // Click on a nickname
     nickClick: function (event) {
-        var nick = $(event.currentTarget).parent('.msg').data('message').nick,
+        var $target = $(event.currentTarget),
+            nick,
             members = this.model.get('members'),
-            are_we_an_op = !!members.getByNick(_kiwi.app.connections.active_connection.get('nick')).get('is_op'),
-            member, query, userbox, menubox;
+            member;
 
-        if (members) {
-            member = members.getByNick(nick);
-            if (member) {
-                userbox = new _kiwi.view.UserBox();
-                userbox.setTargets(member, this.model);
-                userbox.displayOpItems(are_we_an_op);
+        event.stopPropagation();
 
-                menubox = new _kiwi.view.MenuBox(member.get('nick') || 'User');
-                menubox.addItem('userbox', userbox.$el);
-                menubox.showFooter(false);
-                menubox.show();
-
-                // Position the userbox + menubox
-                (function() {
-                    var t = event.pageY,
-                        m_bottom = t + menubox.$el.outerHeight(),  // Where the bottom of menu will be
-                        memberlist_bottom = this.$el.parent().offset().top + this.$el.parent().outerHeight();
-
-                    // If the bottom of the userbox is going to be too low.. raise it
-                    if (m_bottom > memberlist_bottom){
-                        t = memberlist_bottom - menubox.$el.outerHeight();
-                    }
-
-                    // Set the new positon
-                    menubox.$el.offset({
-                        left: event.clientX,
-                        top: t
-                    });
-                }).call(this);
-            }
+        // Check this current element for a nick before resorting to the main message
+        // (eg. inline nicks has the nick on its own element within the message)
+        nick = $target.data('nick');
+        if (!nick) {
+            nick = $target.parent('.msg').data('message').nick;
         }
+
+        // Make sure this nick is still in the channel
+        member = members ? members.getByNick(nick) : null;
+        if (!member) {
+            return;
+        }
+
+        _kiwi.global.events.emit('nick:select', {target: $target, member: member, source: 'message'})
+        .then(_.bind(this.openUserMenuForNick, this, $target, member));
+    },
+
+
+    updateLastSeenMarker: function() {
+        if (this.model.isActive()) {
+            // Remove the previous last seen classes
+            this.$(".last_seen").removeClass("last_seen");
+
+            // Mark the last message the user saw
+            this.$messages.children().last().addClass("last_seen");
+        }
+    },
+
+
+    openUserMenuForNick: function ($target, member) {
+        var members = this.model.get('members'),
+            are_we_an_op = !!members.getByNick(_kiwi.app.connections.active_connection.get('nick')).get('is_op'),
+            userbox, menubox;
+
+        userbox = new _kiwi.view.UserBox();
+        userbox.setTargets(member, this.model);
+        userbox.displayOpItems(are_we_an_op);
+
+        menubox = new _kiwi.view.MenuBox(member.get('nick') || 'User');
+        menubox.addItem('userbox', userbox.$el);
+        menubox.showFooter(false);
+
+        _kiwi.global.events.emit('usermenu:created', {menu: menubox, userbox: userbox, user: member})
+        .then(_.bind(function() {
+            menubox.show();
+
+            // Position the userbox + menubox
+            var target_offset = $target.offset(),
+                t = target_offset.top,
+                m_bottom = t + menubox.$el.outerHeight(),  // Where the bottom of menu will be
+                memberlist_bottom = this.$el.parent().offset().top + this.$el.parent().outerHeight();
+
+            // If the bottom of the userbox is going to be too low.. raise it
+            if (m_bottom > memberlist_bottom){
+                t = memberlist_bottom - menubox.$el.outerHeight();
+            }
+
+            // Set the new positon
+            menubox.$el.offset({
+                left: target_offset.left,
+                top: t
+            });
+        }, this))
+        .catch(_.bind(function() {
+            userbox = null;
+
+            menu.dispose();
+            menu = null;
+        }, this));
     },
 
 
@@ -365,5 +544,5 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
         if (!nick_class) return;
 
         $('.'+nick_class).removeClass('global_nick_highlight');
-    },
+    }
 });

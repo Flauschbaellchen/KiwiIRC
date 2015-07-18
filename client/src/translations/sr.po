@@ -708,3 +708,15 @@ msgstr "Blokiraj poruke izvan ovog kanala"
 msgid "client_views_channelinfo_togglebanlist"
 msgstr "Isključi ban listu."
 
+#: 
+msgid "client_views_controlbox_message"
+msgstr "Pošalji poruku..."
+
+#: 
+msgid "disconnect_from_server"
+msgstr "Ovo će vas diskonektovati sa IRC mreže. Da li ste sigurni?"
+
+#: 
+msgid "client_applets_settings_custom_highlights"
+msgstr "Custom highlights (space separated)"
+

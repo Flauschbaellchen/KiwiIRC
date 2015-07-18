@@ -12,6 +12,7 @@ var net             = require('net'),
     EE              = require('../ee.js'),
     iconv           = require('iconv-lite'),
     Proxy           = require('../proxy.js'),
+    Stats           = require('../stats.js'),
     Socks;
 
 
@@ -32,6 +33,8 @@ var IrcConnection = function (hostname, port, ssl, nick, user, options, state, c
     });
     this.setMaxListeners(0);
 
+    Stats.incr('irc.connection.created');
+
     options = options || {};
 
     // Socket state
@@ -39,6 +42,12 @@ var IrcConnection = function (hostname, port, ssl, nick, user, options, state, c
 
     // If the connection closes and this is false, we reconnect
     this.requested_disconnect = false;
+
+    // Number of times we have tried to reconnect
+    this.reconnect_attempts = 0;
+
+    // Last few lines from the IRCd for context when disconnected (server errors, etc)
+    this.last_few_lines = [];
 
     // IRCd write buffers (flood controll)
     this.write_buffer = [];
@@ -49,9 +58,6 @@ var IrcConnection = function (hostname, port, ssl, nick, user, options, state, c
     // Max number of lines to write a second
     this.write_buffer_lines_second = 2;
 
-    // If registeration with the IRCd has completed
-    this.registered = false;
-
     // If we are in the CAP negotiation stage
     this.cap_negotiation = true;
 
@@ -61,6 +67,7 @@ var IrcConnection = function (hostname, port, ssl, nick, user, options, state, c
     this.username = this.nick.replace(/[^0-9a-zA-Z\-_.\/]/, '');
     this.gecos = ''; // Users real-name. Uses default from config if empty
     this.password = options.password || '';
+    this.quit_message = ''; // Uses default from config if empty
 
     // Set the passed encoding. or the default if none giving or it fails
     if (!options.encoding || !this.setEncoding(options.encoding)) {
@@ -74,7 +81,7 @@ var IrcConnection = function (hostname, port, ssl, nick, user, options, state, c
     this.con_num = con_num;
 
     // IRC protocol handling
-    this.irc_commands = new IrcCommands(this);
+    this.irc_commands = new IrcCommands.Handler(this);
 
     // IrcServer object
     this.server = new IrcServer(this, hostname, port);
@@ -135,6 +142,28 @@ var IrcConnection = function (hostname, port, ssl, nick, user, options, state, c
 util.inherits(IrcConnection, EE);
 
 module.exports.IrcConnection = IrcConnection;
+
+
+
+/**
+ * Create and keep track of all timers so they can be easily removed
+ */
+IrcConnection.prototype.setTimeout = function(fn, length) {
+    var tmr = setTimeout(fn, length);
+    this._timers = this._timers || [];
+    this._timers.push(tmr);
+    return tmr;
+};
+
+IrcConnection.prototype.clearTimers = function() {
+    if (!this._timers) {
+        return;
+    }
+
+    this._timers.forEach(function(tmr) {
+        clearTimeout(tmr);
+    });
+};
 
 
 
@@ -254,8 +283,11 @@ IrcConnection.prototype.connect = function () {
                     localAddress: outgoing
                 });
 
-                // We need the raw socket connect event
-                that.socket.socket.on('connect', function() { rawSocketConnect.call(that, this); });
+                // We need the raw socket connect event.
+                // node.js 0.12 no longer has a .socket property.
+                (that.socket.socket || that.socket).on('connect', function() {
+                    rawSocketConnect.call(that, this);
+                });
 
                 socket_connect_event_name = 'secureConnect';
 
@@ -281,6 +313,7 @@ IrcConnection.prototype.connect = function () {
                 rawSocketConnect.call(that, this);
             }
 
+            Stats.incr('irc.connection.connected');
             that.connected = true;
 
             socketConnectHandler.call(that);
@@ -297,7 +330,7 @@ IrcConnection.prototype.connect = function () {
         that.socket.on('close', function socketCloseCb(had_error) {
             // If that.connected is false, we never actually managed to connect
             var was_connected = that.connected,
-                had_registered = that.server.registered,
+                safely_registered = (new Date()) - that.server.registered > 10000, // Safely = registered + 10secs after.
                 should_reconnect = false;
 
             that.connected = false;
@@ -308,23 +341,42 @@ IrcConnection.prototype.connect = function () {
                 delete global.clients.port_pairs[that.identd_port_pair];
             }
 
-            should_reconnect = (!that.requested_disconnect && was_connected && had_registered);
-
-            if (should_reconnect) {
-                that.emit('reconnecting');
-            } else {
-                that.emit('close', had_error);
-            }
-
             // Close the whole socket down
             that.disposeSocket();
 
-            // If this socket closing was not expected and we did actually connect and
-            // we did previously completely register on the network, then reconnect
-            if (should_reconnect) {
-                setTimeout(function() {
-                    that.connect();
-                }, 3000);
+            if (!global.config.ircd_reconnect) {
+                that.emit('close', had_error);
+
+            } else {
+                // If trying to reconnect, continue with it
+                if (that.reconnect_attempts && that.reconnect_attempts < 3) {
+                    should_reconnect = true;
+
+                // If this was an unplanned disconnect and we were originally connected OK, reconnect
+                } else if (!that.requested_disconnect  && was_connected && safely_registered) {
+                    should_reconnect = true;
+
+                } else {
+                    should_reconnect = false;
+                }
+
+                if (should_reconnect) {
+                    Stats.incr('irc.connection.reconnect');
+                    that.reconnect_attempts++;
+                    that.emit('reconnecting');
+                } else {
+                    Stats.incr('irc.connection.closed');
+                    that.emit('close', had_error);
+                    that.reconnect_attempts = 0;
+                }
+
+                // If this socket closing was not expected and we did actually connect and
+                // we did previously completely register on the network, then reconnect
+                if (should_reconnect) {
+                    that.setTimeout(function() {
+                        that.connect();
+                    }, 4000);
+                }
             }
         });
     });
@@ -343,12 +395,12 @@ IrcConnection.prototype.clientEvent = function (event_name, data, callback) {
  * @param data The line of data to be sent
  * @param force Write the data now, ignoring any write queue
  */
-IrcConnection.prototype.write = function (data, force) {
+IrcConnection.prototype.write = function (data, force, force_complete_fn) {
     //ENCODE string to encoding of the server
     var encoded_buffer = iconv.encode(data + '\r\n', this.encoding);
 
     if (force) {
-        this.socket.write(encoded_buffer);
+        this.socket && this.socket.write(encoded_buffer, force_complete_fn);
         return;
     }
 
@@ -379,7 +431,7 @@ IrcConnection.prototype.flushWriteBuffer = function () {
     // Disabled write buffer? Send everything we have
     if (!this.write_buffer_lines_second) {
         this.write_buffer.forEach(function(buffer) {
-            this.socket.write(buffer);
+            this.socket && this.socket.write(buffer);
             this.write_buffer = null;
         });
 
@@ -395,12 +447,12 @@ IrcConnection.prototype.flushWriteBuffer = function () {
         return;
     }
 
-    this.socket.write(this.write_buffer[0]);
+    this.socket && this.socket.write(this.write_buffer[0]);
     this.write_buffer = this.write_buffer.slice(1);
 
     // Call this function again at some point if we still have data to write
     if (this.write_buffer.length > 0) {
-        setTimeout(this.flushWriteBuffer.bind(this), 1000 / this.write_buffer_lines_second);
+        that.setTimeout(this.flushWriteBuffer.bind(this), 1000 / this.write_buffer_lines_second);
     } else {
         // No more buffers to write.. so we've finished
         this.writing_buffer = false;
@@ -413,17 +465,40 @@ IrcConnection.prototype.flushWriteBuffer = function () {
  * Close the connection to the IRCd after forcing one last line
  */
 IrcConnection.prototype.end = function (data) {
-    if (!this.socket) {
+    var that = this;
+
+    if (!this.connected) {
         return;
     }
 
     this.requested_disconnect = true;
 
     if (data) {
-        this.write(data, true);
+        // Once the last bit of data has been sent, then re-run this function to close the socket
+        this.write(data, true, function() {
+            that.end();
+        });
+
+        return;
     }
 
-    this.socket.end();
+    this.socket.destroy();
+};
+
+
+
+/**
+ * Check if any server capabilities are enabled
+ */
+IrcConnection.prototype.capContainsAny = function (caps) {
+    var enabled_caps;
+
+    if (!caps instanceof Array) {
+        caps = [caps];
+    }
+
+    enabled_caps = _.intersection(this.cap.enabled, caps);
+    return enabled_caps.length > 0;
 };
 
 
@@ -459,6 +534,7 @@ IrcConnection.prototype.dispose = function () {
 
     EventBinder.unbindIrcEvents('', this.irc_events, this);
 
+    this.clearTimers();
     this.removeAllListeners();
 };
 
@@ -633,7 +709,7 @@ var socketConnectHandler = function () {
     // Let the webirc/etc detection modify any required parameters
     connect_data = findWebIrc.call(this, connect_data);
 
-    global.modules.emit('irc authorize', connect_data).done(function ircAuthorizeCb() {
+    global.modules.emit('irc authorize', connect_data).then(function ircAuthorizeCb() {
         var gecos = that.gecos;
 
         if (!gecos && global.config.default_gecos) {
@@ -675,18 +751,25 @@ var socketConnectHandler = function () {
 function findWebIrc(connect_data) {
     var webirc_pass = global.config.webirc_pass,
         ip_as_username = global.config.ip_as_username,
-        tmp;
+        found_webirc_pass, tmp;
 
 
-    // Do we have a WEBIRC password for this?
-    if (webirc_pass && webirc_pass[this.irc_host.hostname]) {
+    // Do we have a single WEBIRC password?
+    if (typeof webirc_pass === 'string') {
+        found_webirc_pass = webirc_pass;
+
+    // Do we have a WEBIRC password for this hostname?
+    } else if (typeof webirc_pass === 'object' && webirc_pass[this.irc_host.hostname]) {
+        found_webirc_pass = webirc_pass[this.irc_host.hostname];
+    }
+
+    if (found_webirc_pass) {
         // Build the WEBIRC line to be sent before IRC registration
         tmp = 'WEBIRC ' + webirc_pass[this.irc_host.hostname] + ' KiwiIRC ';
         tmp += this.user.hostname + ' ' + this.user.address;
 
         connect_data.prepend_data = [tmp];
     }
-
 
     // Check if we need to pass the users IP as its username/ident
     if (ip_as_username && ip_as_username.indexOf(this.irc_host.hostname) > -1) {
@@ -793,7 +876,8 @@ function parseIrcLine(buffer_line) {
         tags = [],
         tag,
         line = '',
-        msg_obj;
+        msg_obj,
+        hold_last_lines;
 
     // Decode server encoding
     line = iconv.decode(buffer_line, this.encoding);
@@ -810,6 +894,18 @@ function parseIrcLine(buffer_line) {
         return;
     }
 
+    // If enabled, keep hold of the last X lines
+    if (global.config.hold_ircd_lines) {
+        this.last_few_lines.push(line.replace(/^\r+|\r+$/, ''));
+
+        // Trim the array down if it's getting to long. (max 3 by default)
+        hold_last_lines = parseInt(global.config.hold_ircd_lines, 10) || 3;
+
+        if (this.last_few_lines.length > hold_last_lines) {
+            this.last_few_lines = this.last_few_lines.slice(this.last_few_lines.length - hold_last_lines);
+        }
+    }
+
     // Extract any tags (msg[1])
     if (msg[1]) {
         tags = msg[1].split(';');
@@ -823,16 +919,16 @@ function parseIrcLine(buffer_line) {
     msg_obj = {
         tags:       tags,
         prefix:     msg[2],
-        nick:       msg[3],
-        ident:      msg[4],
+        nick:       msg[3] || msg[2],  // Nick will be in the prefix slot if a full user mask is not used
+        ident:      msg[4] || '',
         hostname:   msg[5] || '',
         command:    msg[6],
         params:     msg[7] ? msg[7].split(/ +/) : []
     };
 
     if (msg[8]) {
-        msg_obj.params.push(msg[8].trim());
+        msg_obj.params.push(msg[8].trimRight());
     }
 
-    this.irc_commands.dispatch(msg_obj.command.toUpperCase(), msg_obj);
+    this.irc_commands.dispatch(new IrcCommands.Command(msg_obj.command.toUpperCase(), msg_obj));
 }

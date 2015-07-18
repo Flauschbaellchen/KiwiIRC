@@ -41,7 +41,7 @@ html, body { height:100%; }
 #kiwi .panels { position:absolute; left:0px; right:200px; bottom:100px; top:100px; }
 #kiwi .right_bar { position:absolute; right:0px; width:200px; bottom:100px; top:100px; overflow:visible; }
 #kiwi .right-bar-content { position:relative; height:100%; z-index:0; }
-#kiwi .controlbox { position: absolute; bottom:0px; width:100%; display:none; }
+#kiwi .controlbox { position: absolute; bottom:0px; width:100%; z-index: 1; display:none; }
 #kiwi .memberlists_resize_handle {
     position: absolute; width:10px; z-index:1; cursor:w-resize;
 }
@@ -77,6 +77,10 @@ html, body { height:100%; }
 #kiwi .toolbar .connections .panellist:after { content:""; }
 
 #kiwi .status_message {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 2;
     background: #FFF;
     border-bottom: 1px solid;
     text-align: center;
@@ -107,7 +111,7 @@ html, body { height:100%; }
 
 #kiwi .messages .msg {}
 #kiwi .messages .msg .time { display:inline; }
-#kiwi .messages .msg .nick { display:inline; }
+#kiwi .messages .msg .nick { display:inline; cursor: pointer; }
 #kiwi .messages .msg .text { display:inline; }
 
 #kiwi .messages .msg.action .nick { display:none; }
@@ -319,7 +323,27 @@ html, body { height:100%; }
 
 /* Some of these styles will move to global styling later */
 #kiwi .settings_container {
-    padding: 50px;
+    padding: 25px;
+}
+
+#kiwi .settings_container .settings-category {
+    display: none;
+    margin-left: 130px;
+    padding: 2em;
+}
+
+#kiwi .settings_container .settings-category.active {
+    display: block;
+}
+#kiwi .settings_container .settings-category-list {
+    float: left;
+    width: 130px;
+}
+#kiwi .settings_container .settings-category-list a {
+    display: block;
+    line-height: 2.5em;
+    padding: 0 1em;
+    width: 100%;
 }
 
 #kiwi .settings_container .thumbnails:before {
@@ -523,4 +547,29 @@ html, body { height:100%; }
 }
 #kiwi .applet .applet_chanlist td {
     min-width: 120px;
+}
+
+
+#kiwi .notification {
+    z-index: 1;
+    position:absolute;
+    top:3px; right:3px;
+    width: 300px;
+    max-width: 90%;
+
+    /* .show class reveals this element */
+    display: none;
+}
+#kiwi .notification.show { display: block; }
+#kiwi .notification-inner {
+    position:relative;
+    padding:0 10px 23px 10px;
+}
+#kiwi .notification .close {
+    position:absolute;
+    bottom: 10px;
+    left: 10px;
+    margin: -10px;
+    cursor:pointer;
+    width: 40px;
 }

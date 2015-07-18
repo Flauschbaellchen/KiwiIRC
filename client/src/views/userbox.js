@@ -31,7 +31,9 @@ _kiwi.view.UserBox = Backbone.View.extend({
         this.user = user;
         this.channel = channel;
 
-        var is_ignored = _kiwi.app.connections.active_connection.isNickIgnored(this.user.get('nick'));
+        var user_mask = toUserMask(this.user.get('nick')),
+            is_ignored = _kiwi.app.connections.active_connection.isUserIgnored(user_mask);
+
         this.$('.ignore input').attr('checked', is_ignored ? 'checked' : false);
     },
 
@@ -44,15 +46,8 @@ _kiwi.view.UserBox = Backbone.View.extend({
     },
 
     queryClick: function (event) {
-        var nick = this.user.get('nick'),
-            panel = _kiwi.app.connections.active_connection.panels.getByName(nick);
-
-        if (!panel) {
-            panel = new _kiwi.model.Query({name: nick});
-            _kiwi.app.connections.active_connection.panels.add(panel);
-        }
-
-        panel.view.show();
+        var nick = this.user.get('nick');
+        _kiwi.app.connections.active_connection.createQuery(nick);
     },
 
     infoClick: function (event) {

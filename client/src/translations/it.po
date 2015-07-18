@@ -708,3 +708,15 @@ msgstr "Blocca i messaggi esterni al canale"
 msgid "client_views_channelinfo_togglebanlist"
 msgstr "Mostra Banlist"
 
+#: 
+msgid "client_views_controlbox_message"
+msgstr "Invia messaggio..."
+
+#: 
+msgid "disconnect_from_server"
+msgstr "Ciò comporta la disconnessione dalla rete IRC. Procedere?"
+
+#: 
+msgid "client_applets_settings_custom_highlights"
+msgstr "Custom highlights (space separated)"
+

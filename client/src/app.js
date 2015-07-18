@@ -8,6 +8,7 @@ _kiwi.misc = {};
 _kiwi.model = {};
 _kiwi.view = {};
 _kiwi.applets = {};
+_kiwi.utils = {};
 
 
 /**
@@ -20,8 +21,10 @@ _kiwi.global = {
     settings: undefined, // Instance of _kiwi.model.DataStore
     plugins: undefined, // Instance of _kiwi.model.PluginManager
     events: undefined, // Instance of PluginInterface
+    rpc: undefined, // Instance of WebsocketRpc
     utils: {}, // References to misc. re-usable helpers / functions
 
+    // Make public some internal utils for plugins to make use of
     initUtils: function() {
         this.utils.randomString = randomString;
         this.utils.secondsToTime = secondsToTime;
@@ -30,10 +33,10 @@ _kiwi.global = {
         this.utils.formatIRCMsg = formatIRCMsg;
         this.utils.styleText = styleText;
         this.utils.hsl2rgb = hsl2rgb;
-    },
+        this.utils.toUserMask = toUserMask;
 
-    rpc: function() {
-        _kiwi.gateway.rpc.call.call(_kiwi.gateway.rpc, arguments);
+        this.utils.notifications = _kiwi.utils.notifications;
+        this.utils.formatDate = _kiwi.utils.formatDate;
     },
 
     addMediaMessageType: function(match, buildHtml) {
@@ -63,8 +66,6 @@ _kiwi.global = {
              */
             function proxyEvent(event_name, event_data) {
                 if (proxy_event_name == 'all') {
-                    event_name = event_data.event_name;
-                    event_data = event_data.event_data;
                 } else {
                     event_data = event_name.event_data;
                     event_name = event_name.event_name;
@@ -75,7 +76,6 @@ _kiwi.global = {
 
             // The event we are to proxy
             proxy_event_name = proxy_event_name || 'all';
-
 
             _.extend(this, Backbone.Events);
             this._source = event_source;
@@ -94,22 +94,37 @@ _kiwi.global = {
         Network: function(connection_id) {
             var connection_event;
 
+            // If no connection id given, use all connections
             if (typeof connection_id !== 'undefined') {
                 connection_event = 'connection:' + connection_id.toString();
             } else {
                 connection_event = 'connection';
             }
 
+            // Helper to get the network object
+            var getNetwork = function() {
+                var network = typeof connection_id === 'undefined' ?
+                    _kiwi.app.connections.active_connection :
+                    _kiwi.app.connections.getByConnectionId(connection_id);
+
+                return network ?
+                    network :
+                    undefined;
+            };
+
+            // Create the return object (events proxy from the gateway)
             var obj = new this.EventComponent(_kiwi.gateway, connection_event);
+
+            // Proxy several gateway functions onto the return object
             var funcs = {
                 kiwi: 'kiwi', raw: 'raw', kick: 'kick', topic: 'topic',
                 part: 'part', join: 'join', action: 'action', ctcp: 'ctcp',
                 ctcpRequest: 'ctcpRequest', ctcpResponse: 'ctcpResponse',
-                notice: 'notice', msg: 'privmsg', changeNick: 'changeNick',
-                channelInfo: 'channelInfo', mode: 'mode'
+                notice: 'notice', msg: 'privmsg', say: 'privmsg',
+                changeNick: 'changeNick', channelInfo: 'channelInfo',
+                mode: 'mode', quit: 'quit'
             };
 
-            // Proxy each gateway method
             _.each(funcs, function(gateway_fn, func_name) {
                 obj[func_name] = function() {
                     var fn_name = gateway_fn;
@@ -122,6 +137,46 @@ _kiwi.global = {
                     return _kiwi.gateway[fn_name].apply(_kiwi.gateway, args);
                 };
             });
+
+            // Now for some network related functions...
+            obj.createQuery = function(nick) {
+                var network, restricted_keys;
+
+                network = getNetwork();
+                if (!network) {
+                    return;
+                }
+
+                return network.createQuery(nick);
+            };
+
+            // Add the networks getters/setters
+            obj.get = function(name) {
+                var network, restricted_keys;
+
+                network = getNetwork();
+                if (!network) {
+                    return;
+                }
+
+                restricted_keys = [
+                    'password'
+                ];
+                if (restricted_keys.indexOf(name) > -1) {
+                    return undefined;
+                }
+
+                return network.get(name);
+            };
+
+            obj.set = function() {
+                var network = getNetwork();
+                if (!network) {
+                    return;
+                }
+
+                return network.set.apply(network, arguments);
+            };
 
             return obj;
         },
@@ -139,19 +194,52 @@ _kiwi.global = {
                 };
             });
 
+            // Give access to the control input textarea
+            obj.input = _kiwi.app.controlbox.$('.inp');
+
             return obj;
         }
     },
 
     // Entry point to start the kiwi application
     init: function (opts, callback) {
-        var jobs, locale, localeLoaded, textThemeLoaded, text_theme;
+        var locale_promise, theme_promise,
+            that = this;
+
         opts = opts || {};
 
         this.initUtils();
 
-        jobs = new JobManager();
-        jobs.onFinish(function(locale, s, xhr) {
+        // Set up the settings datastore
+        _kiwi.global.settings = _kiwi.model.DataStore.instance('kiwi.settings');
+        _kiwi.global.settings.load();
+
+        // Set the window title
+        window.document.title = opts.server_settings.client.window_title || 'Kiwi IRC';
+
+        locale_promise = new Promise(function (resolve) {
+            // In order, find a locale from the users saved settings, the URL, default settings on the server, or auto detect
+            var locale = _kiwi.global.settings.get('locale') || opts.locale || opts.server_settings.client.settings.locale || 'magic';
+            $.getJSON(opts.base_path + '/assets/locales/' + locale + '.json', function (locale) {
+                if (locale) {
+                    that.i18n = new Jed(locale);
+                } else {
+                    that.i18n = new Jed();
+                }
+                resolve();
+            });
+        });
+
+        theme_promise = new Promise(function (resolve) {
+            var text_theme = opts.server_settings.client.settings.text_theme || 'default';
+            $.getJSON(opts.base_path + '/assets/text_themes/' + text_theme + '.json', function(text_theme) {
+                opts.text_theme = text_theme;
+                resolve();
+            });
+        });
+
+
+        Promise.all([locale_promise, theme_promise]).then(function () {
             _kiwi.app = new _kiwi.model.Application(opts);
 
             // Start the client up
@@ -164,42 +252,10 @@ _kiwi.global = {
             _kiwi.global.plugins = new _kiwi.model.PluginManager();
 
             callback();
+
+        }).then(null, function(err) {
+            console.error(err.stack);
         });
-
-        textThemeLoaded = function(text_theme, s, xhr) {
-            opts.text_theme = text_theme;
-
-            jobs.finishJob('load_text_theme');
-        };
-
-        localeLoaded = function(locale, s, xhr) {
-            if (locale) {
-                _kiwi.global.i18n = new Jed(locale);
-            } else {
-                _kiwi.global.i18n = new Jed();
-            }
-
-            jobs.finishJob('load_locale');
-        };
-
-        // Set up the settings datastore
-        _kiwi.global.settings = _kiwi.model.DataStore.instance('kiwi.settings');
-        _kiwi.global.settings.load();
-
-        // Set the window title
-        window.document.title = opts.server_settings.client.window_title || 'Kiwi IRC';
-
-        jobs.registerJob('load_locale');
-        locale = _kiwi.global.settings.get('locale');
-        if (!locale) {
-            $.getJSON(opts.base_path + '/assets/locales/magic.json', localeLoaded);
-        } else {
-            $.getJSON(opts.base_path + '/assets/locales/' + locale + '.json', localeLoaded);
-        }
-
-        jobs.registerJob('load_text_theme');
-        text_theme = opts.server_settings.client.settings.text_theme || 'default';
-        $.getJSON(opts.base_path + '/assets/text_themes/' + text_theme + '.json', textThemeLoaded);
     },
 
     start: function() {
@@ -357,18 +413,6 @@ _kiwi.global = {
 
             if (_kiwi.app.server_settings.connection.ssl) {
                 defaults.ssl = _kiwi.app.server_settings.connection.ssl;
-            }
-
-            if (_kiwi.app.server_settings.connection.channel) {
-                defaults.channel = _kiwi.app.server_settings.connection.channel;
-            }
-
-            if (_kiwi.app.server_settings.connection.channel_key) {
-                defaults.channel_key = _kiwi.app.server_settings.connection.channel_key;
-            }
-
-            if (_kiwi.app.server_settings.connection.nick) {
-                defaults.nick = _kiwi.app.server_settings.connection.nick;
             }
         }
 

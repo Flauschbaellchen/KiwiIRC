@@ -708,3 +708,15 @@ msgstr "Bloquer les messages extérieurs au salon"
 msgid "client_views_channelinfo_togglebanlist"
 msgstr "Liste des bannis"
 
+#: 
+msgid "client_views_controlbox_message"
+msgstr "Envoyer un message..."
+
+#: 
+msgid "disconnect_from_server"
+msgstr "Vous allez être déconnecté du réseau IRC. Voulez-vous vraiment vous déconnecter ?"
+
+#: 
+msgid "client_applets_settings_custom_highlights"
+msgstr "Custom highlights (space separated)"
+

@@ -101,6 +101,11 @@
                     that.gateway = _kiwi.global.components.Network(that.get('connection_id'));
                     that.bindGatewayEvents();
 
+                    // Reset each of the panels connection ID
+                    that.panels.forEach(function(panel) {
+                        panel.set('connection_id', connection_id);
+                    });
+
                     callback_fn && callback_fn(err);
 
                 } else {
@@ -218,27 +223,50 @@
             return (channel_prefix.indexOf(channel_name[0]) > -1);
         },
 
-        // Check a nick alongside our ignore list
-        isNickIgnored: function (nick) {
+        // Check if a user is ignored.
+        // Accepts an object with nick, ident and hostname OR a string.
+        isUserIgnored: function (mask) {
             var idx, list = this.get('ignore_list');
-            var pattern, regex;
+
+            if (typeof mask === "object") {
+               mask = (mask.nick||'*')+'!'+(mask.ident||'*')+'@'+(mask.hostname||'*');
+            } else if (typeof mask === "string") {
+               mask = toUserMask(mask);
+            }
 
             for (idx = 0; idx < list.length; idx++) {
-                pattern = list[idx].replace(/([.+^$[\]\\(){}|-])/g, "\\$1")
-                    .replace('*', '.*')
-                    .replace('?', '.');
-
-                regex = new RegExp(pattern, 'i');
-                if (regex.test(nick)) return true;
+                if (list[idx][1].test(mask)) {
+                   return true;
+                }
             }
 
             return false;
+        },
+
+        // Create a new query panel
+        createQuery: function (nick) {
+            var that = this,
+                query;
+
+            // Check if we have the panel already. If not, create it
+            query = that.panels.getByName(nick);
+            if (!query) {
+                query = new _kiwi.model.Query({name: nick});
+                that.panels.add(query);
+            }
+
+            // In all cases, show the demanded query
+            query.view.show();
+
+            return query;
         }
     });
 
 
 
     function onDisconnect(event) {
+        this.set('connected', false);
+
         $.each(this.panels.models, function (index, panel) {
             if (!panel.isApplet()) {
                 panel.addMsg('', styleText('network_disconnected', {text: translateText('client_models_network_disconnected', [])}), 'action quit');
@@ -253,6 +281,8 @@
 
         // Update our nick with what the network gave us
         this.set('nick', event.nick);
+
+        this.set('connected', true);
 
         // If this is a re-connection then we may have some channels to re-join
         this.rejoinAllChannels();
@@ -310,13 +340,22 @@
         members = c.get('members');
         if (!members) return;
 
+        // Do we already have this member?
+        if (members.getByNick(event.nick)) {
+            return;
+        }
+
         user = new _kiwi.model.Member({
             nick: event.nick,
             ident: event.ident,
             hostname: event.hostname,
             user_prefixes: this.get('user_prefixes')
         });
-        members.add(user, {kiwi: event});
+
+        _kiwi.global.events.emit('channel:join', {channel: event.channel, user: user, network: this.gateway})
+        .then(function() {
+            members.add(user, {kiwi: event});
+        });
     }
 
 
@@ -344,7 +383,10 @@
         user = members.getByNick(event.nick);
         if (!user) return;
 
-        members.remove(user, {kiwi: part_options});
+        _kiwi.global.events.emit('channel:leave', {channel: event.channel, user: user, type: 'part', message: part_options.message, network: this.gateway})
+        .then(function() {
+            members.remove(user, {kiwi: part_options});
+        });
     }
 
 
@@ -370,7 +412,10 @@
             if (panel.isChannel()) {
                 member = panel.get('members').getByNick(event.nick);
                 if (member) {
-                    panel.get('members').remove(member, {kiwi: quit_options});
+                    _kiwi.global.events.emit('channel:leave', {channel: panel.get('name'), user: member, type: 'quit', message: quit_options.message, network: this.gateway})
+                    .then(function() {
+                        panel.get('members').remove(member, {kiwi: quit_options});
+                    });
                 }
             }
         });
@@ -399,24 +444,27 @@
         if (!user) return;
 
 
-        members.remove(user, {kiwi: part_options});
+        _kiwi.global.events.emit('channel:leave', {channel: event.channel, user: user, type: 'kick', message: part_options.message, network: this.gateway})
+        .then(function() {
+            members.remove(user, {kiwi: part_options});
 
-        if (part_options.current_user_kicked) {
-            members.reset([]);
-            channel.addMsg('', '== You were kicked out of ' + event.channel + ': ' + part_options.message, 'msg action kick highlight');
-        }
+            if (part_options.current_user_kicked) {
+                members.reset([]);
+                channel.addMsg('', '== You were kicked out of ' + event.channel + ': ' + part_options.message, 'msg action kick highlight');
+            }
+        });
     }
 
 
 
     function onMessage(event) {
-        _kiwi.global.events.emit('message:new', {network: this, message: event})
-        .done(_.bind(function() {
+        _kiwi.global.events.emit('message:new', {network: this.gateway, message: event})
+        .then(_.bind(function() {
             var panel,
                 is_pm = ((event.target || '').toLowerCase() == this.get('nick').toLowerCase());
 
             // An ignored user? don't do anything with it
-            if (this.isNickIgnored(event.nick)) {
+            if (this.isUserIgnored(event)) {
                 return;
             }
 
@@ -507,13 +555,15 @@
 
     function onCtcpRequest(event) {
         // An ignored user? don't do anything with it
-        if (this.isNickIgnored(event.nick)) {
+        if (this.isUserIgnored(event)) {
             return;
         }
 
         // Reply to a TIME ctcp
         if (event.msg.toUpperCase() === 'TIME') {
             this.gateway.ctcpResponse(event.type, event.nick, (new Date()).toString());
+        } else if(event.type.toUpperCase() === 'PING') { // CTCP PING reply
+            this.gateway.ctcpResponse(event.type, event.nick, event.msg.substr(5));
         }
     }
 
@@ -521,7 +571,7 @@
 
     function onCtcpResponse(event) {
         // An ignored user? don't do anything with it
-        if (this.isNickIgnored(event.nick)) {
+        if (this.isUserIgnored(event)) {
             return;
         }
 
@@ -551,8 +601,8 @@
         c = this.panels.getByName(event.channel);
         if (!c) return;
 
-        when = formatDate(new Date(event.when * 1000));
-        c.addMsg('', styleText('channel_topic_setby', {text: translateText('client_models_network_topic', [event.nick, when]), channel: event.channel}), 'topic');
+        when = new Date(event.when * 1000);
+        c.set('topic_set_by', {nick: event.nick, when: when});
     }
 
 
@@ -709,37 +759,40 @@
 
 
     function onWhois(event) {
-        var logon_date, idle_time = '', panel;
+        _kiwi.global.events.emit('whois', {nick: event.nick, network: this.gateway, whois: event})
+        .then(function() {
+            var logon_date, idle_time = '', panel;
 
-        if (event.end)
-            return;
+            if (event.end)
+                return;
 
-        if (typeof event.idle !== 'undefined') {
-            idle_time = secondsToTime(parseInt(event.idle, 10));
-            idle_time = idle_time.h.toString().lpad(2, "0") + ':' + idle_time.m.toString().lpad(2, "0") + ':' + idle_time.s.toString().lpad(2, "0");
-        }
+            if (typeof event.idle !== 'undefined') {
+                idle_time = secondsToTime(parseInt(event.idle, 10));
+                idle_time = idle_time.h.toString().lpad(2, "0") + ':' + idle_time.m.toString().lpad(2, "0") + ':' + idle_time.s.toString().lpad(2, "0");
+            }
 
-        panel = _kiwi.app.panels().active;
-        if (event.ident) {
-            panel.addMsg(event.nick, styleText('whois_ident', {nick: event.nick, ident: event.ident, host: event.hostname, text: event.msg}), 'whois');
+            panel = _kiwi.app.panels().active;
+            if (event.ident) {
+                panel.addMsg(event.nick, styleText('whois_ident', {nick: event.nick, ident: event.ident, host: event.hostname, text: event.msg}), 'whois');
 
-        } else if (event.chans) {
-            panel.addMsg(event.nick, styleText('whois_channels', {nick: event.nick, text: translateText('client_models_network_channels', [event.chans])}), 'whois');
-        } else if (event.irc_server) {
-            panel.addMsg(event.nick, styleText('whois_server', {nick: event.nick, text: translateText('client_models_network_server', [event.irc_server, event.server_info])}), 'whois');
-        } else if (event.msg) {
-            panel.addMsg(event.nick, styleText('whois', {text: event.msg}), 'whois');
-        } else if (event.logon) {
-            logon_date = new Date();
-            logon_date.setTime(event.logon * 1000);
-            logon_date = formatDate(logon_date);
+            } else if (event.chans) {
+                panel.addMsg(event.nick, styleText('whois_channels', {nick: event.nick, text: translateText('client_models_network_channels', [event.chans])}), 'whois');
+            } else if (event.irc_server) {
+                panel.addMsg(event.nick, styleText('whois_server', {nick: event.nick, text: translateText('client_models_network_server', [event.irc_server, event.server_info])}), 'whois');
+            } else if (event.msg) {
+                panel.addMsg(event.nick, styleText('whois', {text: event.msg}), 'whois');
+            } else if (event.logon) {
+                logon_date = new Date();
+                logon_date.setTime(event.logon * 1000);
+                logon_date = _kiwi.utils.formatDate(logon_date);
 
-            panel.addMsg(event.nick, styleText('whois_idle_and_signon', {nick: event.nick, text: translateText('client_models_network_idle_and_signon', [idle_time, logon_date])}), 'whois');
-        } else if (event.away_reason) {
-            panel.addMsg(event.nick, styleText('whois_away', {nick: event.nick, text: translateText('client_models_network_away', [event.away_reason])}), 'whois');
-        } else {
-            panel.addMsg(event.nick, styleText('whois_idle', {nick: event.nick, text: translateText('client_models_network_idle', [idle_time])}), 'whois');
-        }
+                panel.addMsg(event.nick, styleText('whois_idle_and_signon', {nick: event.nick, text: translateText('client_models_network_idle_and_signon', [idle_time, logon_date])}), 'whois');
+            } else if (event.away_reason) {
+                panel.addMsg(event.nick, styleText('whois_away', {nick: event.nick, text: translateText('client_models_network_away', [event.away_reason])}), 'whois');
+            } else {
+                panel.addMsg(event.nick, styleText('whois_idle', {nick: event.nick, text: translateText('client_models_network_idle', [idle_time])}), 'whois');
+            }
+        });
     }
 
     function onWhowas(event) {
@@ -835,6 +888,13 @@
         case 'password_mismatch':
             this.panels.server.addMsg(' ', styleText('channel_badpassword', {nick: event.nick, text: translateText('client_models_network_badpassword', []), channel: event.channel}), 'status');
             break;
+
+        case 'error':
+            if (event.reason) {
+                this.panels.server.addMsg(' ', styleText('general_error', {text: event.reason}), 'status');
+            }
+            break;
+
         default:
             // We don't know what data contains, so don't do anything with it.
             //_kiwi.front.tabviews.server.addMsg(null, ' ', '== ' + data, 'status');

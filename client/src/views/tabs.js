@@ -24,9 +24,13 @@ _kiwi.view.Tabs = Backbone.View.extend({
             this.model.network.on('change:name', function (network, new_val) {
                 $('span', this.model.server.tab).text(new_val);
             }, this);
-        }
 
-        this.panel_access = new Array();
+            this.model.network.on('change:connection_id', function (network, new_val) {
+                this.model.forEach(function(panel) {
+                    panel.tab.data('connection_id', new_val);
+                });
+            }, this);
+        }
     },
 
     render: function () {
@@ -65,7 +69,8 @@ _kiwi.view.Tabs = Backbone.View.extend({
 
     panelAdded: function (panel) {
         // Add a tab to the panel
-        panel.tab = $('<li><span>' + (panel.get('title') || panel.get('name')) + '</span><div class="activity"></div></li>');
+        panel.tab = $('<li><span></span><div class="activity"></div></li>');
+        panel.tab.find('span').text(panel.get('title') || panel.get('name'));
 
         if (panel.isServer()) {
             panel.tab.addClass('server');
@@ -83,53 +88,27 @@ _kiwi.view.Tabs = Backbone.View.extend({
         panel.bind('change:title', this.updateTabTitle);
         panel.bind('change:name', this.updateTabTitle);
 
-        //Adding a panel
-        this.panel_access.unshift(panel.cid);
-
         _kiwi.app.view.doLayout();
     },
     panelRemoved: function (panel) {
         var connection = _kiwi.app.connections.active_connection;
 
         panel.tab.remove();
-
-        // If closing the active panel, switch to the last-accessed panel
-        if (this.panel_access[0] === _kiwi.app.panels().active.cid) {
-            this.panel_access.shift();
-
-            //Get the last-accessed panel model now that we removed the closed one
-            var model = connection.panels.getByCid(this.panel_access[0]);
-
-            if (model) {
-                model.view.show();
-            }
-        }
-
         delete panel.tab;
+
+        _kiwi.app.panels.trigger('remove', panel);
 
         _kiwi.app.view.doLayout();
     },
 
     panelActive: function (panel, previously_active_panel) {
-        var panel_index = _.indexOf(this.panel_access, panel.cid);
-
         // Remove any existing tabs or part images
         _kiwi.app.view.$el.find('.panellist .part').remove();
         _kiwi.app.view.$el.find('.panellist .active').removeClass('active');
 
         panel.tab.addClass('active');
 
-        // Only show the part image on non-server tabs
-        if (!panel.isServer()) {
-            panel.tab.append('<span class="part fa fa-nonexistant"></span>');
-        }
-
-        if (panel_index > -1) {
-            this.panel_access.splice(panel_index, 1);
-        }
-
-        //Make this panel the most recently accessed
-        this.panel_access.unshift(panel.cid);
+        panel.tab.append('<span class="part fa fa-nonexistant"></span>');
     },
 
     tabClick: function (e) {
@@ -150,10 +129,19 @@ _kiwi.view.Tabs = Backbone.View.extend({
 
         if (!panel) return;
 
-        // Only need to part if it's a channel
         // If the nicklist is empty, we haven't joined the channel as yet
+        // If we part a server, then we need to disconnect from server, close channel tabs,
+        // close server tab, then bring client back to homepage
         if (panel.isChannel() && panel.get('members').models.length > 0) {
             this.model.network.gateway.part(panel.get('name'));
+
+        } else if(panel.isServer()) {
+            if (!this.model.network.get('connected') || confirm(translateText('disconnect_from_server'))) {
+                this.model.network.gateway.quit("Leaving");
+                _kiwi.app.connections.remove(this.model.network);
+                _kiwi.app.startup_applet.view.show();
+            }
+
         } else {
             panel.close();
         }
