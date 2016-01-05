@@ -719,5 +719,157 @@ msgstr "Uczynienie tego spowoduje, że zostaniesz odłączony od sieci IRC. Jest
 
 #: 
 msgid "client_applets_settings_custom_highlights"
-msgstr "Custom highlights (space separated)"
+msgstr "Własne słowa do podświetlania (oddzielone spacjami)"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_messages"
+msgstr "Wiadomości"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_chat_messages"
+msgstr "Wiadomości z czatu"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_alerts_notifications"
+msgstr "Powiadomienia"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_appearance"
+msgstr "Wygląd"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_theme"
+msgstr "Motyw"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_channels"
+msgstr "Kanały"
+
+#: 
+msgid "client_applets_settings_language"
+msgstr "Język"
+
+#: 
+msgid "client_applets_settings_ignore_new_queries"
+msgstr "Blokuj nowe wiadomości prywatne"
+
+#: 
+msgid "command_description_msg"
+msgstr "Wyślij wiadomość"
+
+#: 
+msgid "command_description_action"
+msgstr "Powiedz, co robisz"
+
+#: 
+msgid "command_description_join"
+msgstr "Dołącz do kanału"
+
+#: 
+msgid "command_description_part"
+msgstr "Opuść kanał"
+
+#: 
+msgid "command_description_cycle"
+msgstr "Opuść kanał, a następnie ponownie doń dołącz"
+
+#: 
+msgid "command_description_nick"
+msgstr "Zmień nick"
+
+#: 
+msgid "command_description_query"
+msgstr "Rozpocznij prywatną rozmowę z kimś"
+
+#: 
+msgid "command_description_invite"
+msgstr "Zaproś kogoś do kanału"
+
+#: 
+msgid "command_description_topic"
+msgstr "Ustaw temat tego kanału"
+
+#: 
+msgid "command_description_notice"
+msgstr "Wyślij powiadomienie"
+
+#: 
+msgid "command_description_quote"
+msgstr "Wyślij nieprzetworzone dane do serwera"
+
+#: 
+msgid "command_description_kick"
+msgstr "Wyrzuć kogoś z kanału"
+
+#: 
+msgid "command_description_clear"
+msgstr "Wyczyść wszystkie wiadomości w tym oknie"
+
+#: 
+msgid "command_description_ctcp"
+msgstr "Wyślij wiadomość CTCP do kogoś."
+
+#: 
+msgid "command_description_quit"
+msgstr "Odłącz się od serwera"
+
+#: 
+msgid "command_description_server"
+msgstr "Podłącz się do nowej sieci IRC"
+
+#: 
+msgid "command_description_whois"
+msgstr "Obejrzyj informacje o kimś"
+
+#: 
+msgid "command_description_whowas"
+msgstr "Obejrzyj informacje o kimś, kto niedawno się odłączył"
+
+#: 
+msgid "command_description_away"
+msgstr "Oznacz się jako osobę niobecną"
+
+#: 
+msgid "command_description_encoding"
+msgstr "Zmień kodowanie połączenia"
+
+#: 
+msgid "command_description_settings"
+msgstr "Pokaż okno ustawień"
+
+#: 
+msgid "command_description_script"
+msgstr "Zmodyfikuj skrypty Kiwi"
+
+#: 
+msgid "command_description_css"
+msgstr "Przeładuj arkusze stylów"
+
+#: 
+msgid "command_description_js"
+msgstr "Załaduj plik z kodem JavaScriptu z adresu URL"
+
+#: 
+msgid "command_description_set"
+msgstr "Ustaw parametr konfiguracyjny Kiwi"
+
+#: 
+msgid "command_description_save"
+msgstr "Zapisz obecne ustawienia Kiwi"
+
+#: 
+msgid "command_description_alias"
+msgstr "Utwórz alias do istniejącego polecenia"
+
+#: 
+msgid "command_description_ignore"
+msgstr "Ignoruj wiadomości od kogoś"
+
+#: 
+msgid "command_description_unignore"
+msgstr "Zaprzestań ignorowania kogoś"
+
+#: 
+msgid "client_applets_settings_autocomplete_slideout"
+msgstr "Pokaż okno autouzupełniania"
 

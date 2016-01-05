@@ -718,5 +718,157 @@ msgstr "Això et desconnectara d'aquesta xarxa IRC. N'estàs segur?"
 
 #: 
 msgid "client_applets_settings_custom_highlights"
-msgstr "Custom highlights (space separated)"
+msgstr "Alertes personalitzades (separades por un espai)"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_messages"
+msgstr "Missatges"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_chat_messages"
+msgstr "Missatges del xat"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_alerts_notifications"
+msgstr "Alertes / Notificacions"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_appearance"
+msgstr "Aparença"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_theme"
+msgstr "Tema"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_channels"
+msgstr "Canals"
+
+#: 
+msgid "client_applets_settings_language"
+msgstr "Idioma"
+
+#: 
+msgid "client_applets_settings_ignore_new_queries"
+msgstr "Bloqueja missatges privats nous"
+
+#: 
+msgid "command_description_msg"
+msgstr "Envia un missatges"
+
+#: 
+msgid "command_description_action"
+msgstr "Fes alguna cosa física"
+
+#: 
+msgid "command_description_join"
+msgstr "Entra a un canal"
+
+#: 
+msgid "command_description_part"
+msgstr "Surt d'un canal"
+
+#: 
+msgid "command_description_cycle"
+msgstr "Surt i torna a entrar a un canal"
+
+#: 
+msgid "command_description_nick"
+msgstr "Canvia el teu sobrenom"
+
+#: 
+msgid "command_description_query"
+msgstr "Comença una conversa privada amb algú"
+
+#: 
+msgid "command_description_invite"
+msgstr "Convida algú al canal"
+
+#: 
+msgid "command_description_topic"
+msgstr "Configura el tema d'aquest canal"
+
+#: 
+msgid "command_description_notice"
+msgstr "Envia una notícia"
+
+#: 
+msgid "command_description_quote"
+msgstr "Envia una ordre «en cru» al servidor"
+
+#: 
+msgid "command_description_kick"
+msgstr "Fes fora a algú del canal"
+
+#: 
+msgid "command_description_clear"
+msgstr "Neteja tots els missatges d'aquesta finestra"
+
+#: 
+msgid "command_description_ctcp"
+msgstr "Envia una ordre CTCP a algú"
+
+#: 
+msgid "command_description_quit"
+msgstr "Desconnecta't  del servidor IRC"
+
+#: 
+msgid "command_description_server"
+msgstr "Connecta't a una xarxa IRC nova"
+
+#: 
+msgid "command_description_whois"
+msgstr "Demana informació sobre algú"
+
+#: 
+msgid "command_description_whowas"
+msgstr "Demana informació sobre algú que s'ha desconnectat recentment"
+
+#: 
+msgid "command_description_away"
+msgstr "Marca't com a absent"
+
+#: 
+msgid "command_description_encoding"
+msgstr "Canvia la codificació de la teva connexió"
+
+#: 
+msgid "command_description_settings"
+msgstr "Mostra la finestra de configuració"
+
+#: 
+msgid "command_description_script"
+msgstr "Modifica els scripts d'usuari"
+
+#: 
+msgid "command_description_css"
+msgstr "Recarrega el full d'estil de la pàgina"
+
+#: 
+msgid "command_description_js"
+msgstr "Carrega un fitxer javascript d'un url"
+
+#: 
+msgid "command_description_set"
+msgstr "Configura una variable del kiwi"
+
+#: 
+msgid "command_description_save"
+msgstr "Desa la configuració actual del kiwi"
+
+#: 
+msgid "command_description_alias"
+msgstr "Crea un àlies per una ordre existent"
+
+#: 
+msgid "command_description_ignore"
+msgstr "Ignora missatges d'algú"
+
+#: 
+msgid "command_description_unignore"
+msgstr "Deixa d'ignorar algú"
+
+#: 
+msgid "client_applets_settings_autocomplete_slideout"
+msgstr "Mostra la caixa d'autocompletació"
 

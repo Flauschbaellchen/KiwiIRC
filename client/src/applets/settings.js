@@ -26,6 +26,7 @@
                 timestamp_24          : translateText('client_applets_settings_timestamp_24_hour'),
                 mute                  : translateText('client_applets_settings_notification_sound'),
                 emoticons             : translateText('client_applets_settings_emoticons'),
+                queries               : translateText('client_applets_settings_ignore_new_queries'),
                 scroll_history        : translateText('client_applets_settings_history_length'),
                 languages             : _kiwi.app.translations,
                 default_client        : translateText('client_applets_settings_default_client'),
@@ -35,11 +36,12 @@
                 html5_notifications   : translateText('client_applets_settings_html5_notifications'),
                 enable_notifications  : translateText('client_applets_settings_enable_notifications'),
                 custom_highlights     : translateText('client_applets_settings_custom_highlights'),
+                autocomplete_slideout : translateText('client_applets_settings_autocomplete_slideout'),
                 theme_thumbnails: _.map(_kiwi.app.themes, function (theme) {
-                    return _.template($('#tmpl_theme_thumbnail').html().trim(), theme);
+                    return _.template($('#tmpl_theme_thumbnail').html().trim())(theme);
                 })
             };
-            this.$el = $(_.template($('#tmpl_applet_settings').html().trim(), text));
+            this.$el = $(_.template($('#tmpl_applet_settings').html().trim())(text));
 
             if (!navigator.registerProtocolHandler) {
                 this.$('.protocol_handler').remove();
@@ -108,13 +110,8 @@
                     break;
             }
 
-            // Stop settings being updated while we're saving one by one
-            _kiwi.global.settings.off('change', this.loadSettings, this);
             settings.set($setting.data('setting'), value);
-            settings.save();
-
-            // Continue listening for setting changes
-            _kiwi.global.settings.on('change', this.loadSettings, this);
+            settings.saveOne($setting.data('setting'));
         },
 
         selectTheme: function(event) {

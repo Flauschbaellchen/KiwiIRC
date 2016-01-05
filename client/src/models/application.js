@@ -40,8 +40,18 @@
 
 
         initializeInterfaces: function () {
-            // Best guess at where the kiwi server is if not already specified
-            var kiwi_server = this.app_options.kiwi_server || this.detectKiwiServer();
+            var kiwi_server = '';
+
+            // The kiwi server to connect to may be a string for a single option,
+            // or an array of kiwi servers to pick one at random from.
+            if (typeof this.app_options.kiwi_server === 'string') {
+                kiwi_server = this.app_options.kiwi_server;
+            } else if (_.isArray(this.app_options.kiwi_server)) {
+                kiwi_server = _.sample(this.app_options.kiwi_server);
+            } else {
+                // Best guess at where the kiwi server is
+                kiwi_server = this.detectKiwiServer();
+            }
 
             // Set the gateway up
             _kiwi.gateway = new _kiwi.model.Gateway({kiwi_server: kiwi_server});
@@ -245,6 +255,9 @@
                                 if (!panel.isChannel())
                                     return;
 
+                                // The memberlist will reset itself and be updated with NAMES output
+                                panel.get('members').reset();
+                                
                                 panel.addMsg('', styleText('rejoin', {text: msg}), 'action join');
                             });
                         });
@@ -299,6 +312,11 @@
 
                     }, jump_server_interval * 1000);
                 }
+            });
+
+
+            gw.on('kiwi:asset_files_changes', function (data) {
+                that.view.reloadStyles();
             });
         }
 

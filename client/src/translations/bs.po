@@ -718,5 +718,158 @@ msgstr "Ovaj korak će vas diskonektovati sa IRC mreže. Da li ste sigurni?"
 
 #: 
 msgid "client_applets_settings_custom_highlights"
-msgstr "Custom highlights (space separated)"
+msgstr "Prilagođena markiranja (odvojiti razmakom)"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_messages"
+msgstr "Poruke"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_chat_messages"
+msgstr "Chat poruke"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_alerts_notifications"
+msgstr "Obavijesti"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_appearance"
+msgstr "Izgled"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_theme"
+msgstr "Tema"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_channels"
+msgstr "Kanali"
+
+#: 
+msgid "client_applets_settings_language"
+msgstr "Jezik"
+
+#: 
+msgid "client_applets_settings_ignore_new_queries"
+msgstr "Blokiraj novu privatnu poruku"
+
+#: 
+msgid "command_description_msg"
+msgstr "Pošalji poruku"
+
+#. What are those?
+#: 
+msgid "command_description_action"
+msgstr "Uradi nešto fizički"
+
+#: 
+msgid "command_description_join"
+msgstr "Pridruži se kanalu"
+
+#: 
+msgid "command_description_part"
+msgstr "Napusti kanal"
+
+#: 
+msgid "command_description_cycle"
+msgstr "Napusti, pa se vrati na kanal"
+
+#: 
+msgid "command_description_nick"
+msgstr "Promijeni nadimak"
+
+#: 
+msgid "command_description_query"
+msgstr "Počni razgovor sa nekim"
+
+#: 
+msgid "command_description_invite"
+msgstr "Pozovi nekog na kanal"
+
+#: 
+msgid "command_description_topic"
+msgstr "Podesi temu za kanal"
+
+#: 
+msgid "command_description_notice"
+msgstr "Pošalji obavijest"
+
+#: 
+msgid "command_description_quote"
+msgstr "Pošalji komandu na IRC server"
+
+#: 
+msgid "command_description_kick"
+msgstr "Izbaci nekog sa kanala"
+
+#: 
+msgid "command_description_clear"
+msgstr "Očisti sve poruke sa prozora"
+
+#: 
+msgid "command_description_ctcp"
+msgstr "Pošalji nekome CTCP komandu"
+
+#: 
+msgid "command_description_quit"
+msgstr "Napusti IRC server"
+
+#: 
+msgid "command_description_server"
+msgstr "Poveži se na novu IRC mrežu"
+
+#: 
+msgid "command_description_whois"
+msgstr "Zatraži informacije o nekome"
+
+#: 
+msgid "command_description_whowas"
+msgstr "Zatraži informacije o nekome ko se nedavno odjavio"
+
+#: 
+msgid "command_description_away"
+msgstr "Označi se Odsutnim"
+
+#: 
+msgid "command_description_encoding"
+msgstr "Promijeni mrežno kodiranje"
+
+#: 
+msgid "command_description_settings"
+msgstr "Prikaži prozor s mogućnostima"
+
+#: 
+msgid "command_description_script"
+msgstr "Izmijeni kiwi skriptu"
+
+#: 
+msgid "command_description_css"
+msgstr "Ponovo učitaj stilove stranice"
+
+#: 
+msgid "command_description_js"
+msgstr "Učitaj javascript dokument sa URL-a"
+
+#: 
+msgid "command_description_set"
+msgstr "Konfiguriši kiwi opcije"
+
+#: 
+msgid "command_description_save"
+msgstr "Spremi trenutne kiwi opcije"
+
+#: 
+msgid "command_description_alias"
+msgstr "Napravi pseudonim za postojeću /komandu"
+
+#: 
+msgid "command_description_ignore"
+msgstr "Ignoriši poruke od nekog"
+
+#: 
+msgid "command_description_unignore"
+msgstr "Prestani ignorisati nekog"
+
+#: 
+msgid "client_applets_settings_autocomplete_slideout"
+msgstr "Prikaži polje za auto dopunjavanje"
 

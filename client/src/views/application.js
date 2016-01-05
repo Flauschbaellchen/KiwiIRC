@@ -84,18 +84,25 @@ _kiwi.view.Application = Backbone.View.extend({
         theme_name = theme_name.toLowerCase();
 
         // Clear any current theme
-        $('[data-theme]:not([disabled])').each(function (idx, link) {
-            var $link = $(link);
-            $link.attr('rel', 'alternate ' + $link.attr('rel')).attr('disabled', true)[0].disabled = true;
+        $('[data-theme]').each(function (idx, link) {
+            link.disabled = true;
         });
 
         // Apply the new theme
         var link = $('[data-theme][title=' + theme_name + ']');
         if (link.length > 0) {
-            link.attr('rel', 'stylesheet').attr('disabled', false)[0].disabled = false;
+            link[0].disabled = false;
         }
 
         this.doLayout();
+    },
+
+
+    reloadStyles: function() {
+        var query_string = '?reload=' + new Date().getTime();
+        $('link[rel="stylesheet"]').each(function() {
+            this.href = this.href.replace(/\?.*|$/, query_string);
+        });
     },
 
 
@@ -137,7 +144,12 @@ _kiwi.view.Application = Backbone.View.extend({
         }
 
         // If we're typing into an input box somewhere, ignore
-        if ((ev.target.tagName.toLowerCase() === 'input') || (ev.target.tagName.toLowerCase() === 'textarea') || $(ev.target).attr('contenteditable')) {
+        var elements = ['input', 'select', 'textarea', 'button', 'datalist', 'keygen'];
+        var do_not_refocus =
+            elements.indexOf(ev.target.tagName.toLowerCase()) > -1 ||
+            $(ev.target).attr('contenteditable');
+
+        if (do_not_refocus) {
             return;
         }
 
@@ -183,7 +195,7 @@ _kiwi.view.Application = Backbone.View.extend({
         }
 
         // Determine if we have a narrow window (mobile/tablet/or even small desktop window)
-        if ($kiwi.outerWidth() < 420) {
+        if ($kiwi.outerWidth() < 700) {
             $kiwi.addClass('narrow');
             if (this.model.rightbar && this.model.rightbar.keep_hidden !== true)
                 this.model.rightbar.toggle(true);
@@ -320,7 +332,7 @@ _kiwi.view.Application = Backbone.View.extend({
             soundManager.setup({
                 url: base_path + '/assets/libs/soundmanager2/',
                 flashVersion: 9, // optional: shiny features (default = 8)// optional: ignore Flash where possible, use 100% HTML5 mode
-                preferFlash: true,
+                preferFlash: false,
 
                 onready: function() {
                     that.sound_object = soundManager.createSound({

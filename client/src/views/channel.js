@@ -8,7 +8,11 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
         return _.extend({}, parent_events, {
             'click .msg .nick' : 'nickClick',
             'click .msg .inline-nick' : 'nickClick',
-            "click .chan": "chanClick",
+            'contextmenu .msg .nick' : 'nickClick',
+            'contextmenu .msg .inline-nick' : 'nickClick',
+            'dblclick .msg .nick' : 'nickClick',
+            'dblclick .msg .inline-nick' : 'nickClick',
+            'click .chan': 'chanClick',
             'click .media .open': 'mediaClick',
             'mouseenter .msg .nick': 'msgEnter',
             'mouseleave .msg .nick': 'msgLeave'
@@ -50,6 +54,13 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
             this.$el.append('<div class="initial_loader" style="margin:1em;text-align:center;"> ' + _kiwi.global.i18n.translate('client_views_channel_joining').fetch() + ' <span class="loader"></span></div>');
         }
 
+        // Move our lastSeenMarker to the bottom if moving away from this tab
+        this.listenTo(_kiwi.app.panels, 'active', function(new_panel, previous_panel) {
+            if (previous_panel === this.model) {
+                this.updateLastSeenMarker();
+            }
+        });
+
         this.model.bind('msg', this.newMsg, this);
         this.msg_count = 0;
     },
@@ -79,69 +90,72 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
             display_obj.nick = styleText('message_nick', {nick: msg.nick, prefix: msg.nick_prefix || ''});
 
             line_msg = '<div class="msg <%= type %> <%= css_classes %>"><div class="time"><%- time_string %></div><div class="nick" style="<%= nick_style %>"><%- nick %></div><div class="text" style="<%= style %>"><%= msg %> </div></div>';
-            this.$messages.append($(_.template(line_msg, display_obj)).data('message', msg));
+            this.$messages.append($(_.template(line_msg)(display_obj)).data('message', msg));
 
-            // Activity/alerts based on the type of new message
-            if (msg.type.match(/^action /)) {
-                this.alert('action');
+            // Activity/alerts based on the type of new message. We only do this if we have
+            // an associated network (think: could be a broadcasted channel so alerts are not needed)
+            if (this.model.get('network')) {
+                if (msg.type.match(/^action /)) {
+                    this.alert('action');
 
-            } else if (msg.is_highlight) {
-                _kiwi.app.view.alertWindow('* ' + _kiwi.global.i18n.translate('client_views_panel_activity').fetch());
-                _kiwi.app.view.favicon.newHighlight();
-                _kiwi.app.view.playSound('highlight');
-                _kiwi.app.view.showNotification(this.model.get('name'), msg.unparsed_msg);
-                this.alert('highlight');
-
-            } else {
-                // If this is the active panel, send an alert out
-                if (this.model.isActive()) {
+                } else if (msg.is_highlight) {
                     _kiwi.app.view.alertWindow('* ' + _kiwi.global.i18n.translate('client_views_panel_activity').fetch());
-                }
-                this.alert('activity');
-            }
-
-            if (this.model.isQuery() && !this.model.isActive()) {
-                _kiwi.app.view.alertWindow('* ' + _kiwi.global.i18n.translate('client_views_panel_activity').fetch());
-
-                // Highlights have already been dealt with above
-                if (!msg.is_highlight) {
                     _kiwi.app.view.favicon.newHighlight();
+                    _kiwi.app.view.playSound('highlight');
+                    _kiwi.app.view.showNotification(this.model.get('name'), msg.unparsed_msg);
+                    this.alert('highlight');
+
+                } else {
+                    // If this is the active panel, send an alert out
+                    if (this.model.isActive()) {
+                        _kiwi.app.view.alertWindow('* ' + _kiwi.global.i18n.translate('client_views_panel_activity').fetch());
+                    }
+                    this.alert('activity');
                 }
 
-                _kiwi.app.view.showNotification(this.model.get('name'), msg.unparsed_msg);
-                _kiwi.app.view.playSound('highlight');
+                if (this.model.isQuery() && !this.model.isActive()) {
+                    _kiwi.app.view.alertWindow('* ' + _kiwi.global.i18n.translate('client_views_panel_activity').fetch());
+
+                    // Highlights have already been dealt with above
+                    if (!msg.is_highlight) {
+                        _kiwi.app.view.favicon.newHighlight();
+                    }
+
+                    _kiwi.app.view.showNotification(this.model.get('name'), msg.unparsed_msg);
+                    _kiwi.app.view.playSound('highlight');
+                }
+
+                // Update the activity counters
+                (function () {
+                    // Only inrement the counters if we're not the active panel
+                    if (this.model.isActive()) return;
+
+                    var count_all_activity = _kiwi.global.settings.get('count_all_activity'),
+                        exclude_message_types, new_count;
+
+                    // Set the default config value
+                    if (typeof count_all_activity === 'undefined') {
+                        count_all_activity = false;
+                    }
+
+                    // Do not increment the counter for these message types
+                    exclude_message_types = [
+                        'action join',
+                        'action quit',
+                        'action part',
+                        'action kick',
+                        'action nick',
+                        'action mode'
+                    ];
+
+                    if (count_all_activity || _.indexOf(exclude_message_types, msg.type) === -1) {
+                        new_count = this.model.get('activity_counter') || 0;
+                        new_count++;
+                        this.model.set('activity_counter', new_count);
+                    }
+
+                }).apply(this);
             }
-
-            // Update the activity counters
-            (function () {
-                // Only inrement the counters if we're not the active panel
-                if (this.model.isActive()) return;
-
-                var count_all_activity = _kiwi.global.settings.get('count_all_activity'),
-                    exclude_message_types, new_count;
-
-                // Set the default config value
-                if (typeof count_all_activity === 'undefined') {
-                    count_all_activity = false;
-                }
-
-                // Do not increment the counter for these message types
-                exclude_message_types = [
-                    'action join',
-                    'action quit',
-                    'action part',
-                    'action kick',
-                    'action nick',
-                    'action mode'
-                ];
-
-                if (count_all_activity || _.indexOf(exclude_message_types, msg.type) === -1) {
-                    new_count = this.model.get('activity_counter') || 0;
-                    new_count++;
-                    this.model.set('activity_counter', new_count);
-                }
-
-            }).apply(this);
 
             if(this.model.isActive()) this.scrollToBottom();
 
@@ -151,6 +165,7 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
                 $('.msg:first', this.$messages).remove();
                 this.msg_count--;
             }
+
         }, this));
     },
 
@@ -169,7 +184,7 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
             // Use the nick from the member object so the style matches the letter casing
             style = this.getNickStyles(nick).asCssString();
         }
-        nick_re = new RegExp('(.*)\\b(' + _kiwi.global.utils.escapeRegex(nick) + ')\\b(.*)', 'i');
+        nick_re = new RegExp('(.*)(' + _.escapeRegExp(nick) + ')(.*)', 'i');
         return word.replace(nick_re, function (__, before, nick_in_orig_case, after) {
             return _.escape(before)
                 + '<span class="inline-nick" style="' + style + '; cursor:pointer" data-nick="' + _.escape(nick) + '">'
@@ -190,7 +205,7 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
             return;
         }
 
-        re = new RegExp('(^|\\s)([' + escapeRegex(network.get('channel_prefix')) + '][^ ,\\007]+)', 'g');
+        re = new RegExp('(^|\\s)([' + _.escapeRegExp(network.get('channel_prefix')) + '][^ ,\\007]+)', 'g');
 
         if (!word.match(re)) {
             return parsed;
@@ -284,6 +299,7 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
         var nick_hex, time_difference,
             message_words,
             sb = this.model.get('scrollback'),
+            network = this.model.get('network'),
             nick,
             regexpStr,
             prev_msg = sb[sb.length-2],
@@ -299,13 +315,13 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
         msg.time_string = '';
 
         // Nick + custom highlight detecting
-        nick = _kiwi.app.connections.active_connection.get('nick');
-        if (msg.nick.localeCompare(nick) !== 0) {
+        nick = network ? network.get('nick') : '';
+        if (nick && msg.nick.localeCompare(nick) !== 0) {
             // Build a list of all highlights and escape them for regex
             regexpStr = _.chain((_kiwi.global.settings.get('custom_highlights') || '').split(/[\s,]+/))
                 .compact()
                 .concat(nick)
-                .map(escapeRegex)
+                .map(_.escapeRegExp)
                 .join('|')
                 .value();
 
@@ -428,26 +444,36 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
             return;
         }
 
-        _kiwi.global.events.emit('nick:select', {target: $target, member: member, source: 'message'})
+        _kiwi.global.events.emit('nick:select', {
+            target: $target,
+            member: member,
+            network: this.model.get('network'),
+            source: 'message',
+            $event: event
+        })
         .then(_.bind(this.openUserMenuForNick, this, $target, member));
     },
 
 
     updateLastSeenMarker: function() {
-        if (this.model.isActive()) {
-            // Remove the previous last seen classes
-            this.$(".last_seen").removeClass("last_seen");
+        // Remove the previous last seen classes
+        this.$(".last_seen").removeClass("last_seen");
 
-            // Mark the last message the user saw
-            this.$messages.children().last().addClass("last_seen");
-        }
+        // Mark the last message the user saw
+        this.$messages.children().last().addClass("last_seen");
     },
 
 
     openUserMenuForNick: function ($target, member) {
         var members = this.model.get('members'),
-            are_we_an_op = !!members.getByNick(_kiwi.app.connections.active_connection.get('nick')).get('is_op'),
+            network = this.model.get('network'),
+            are_we_an_op = network ? !!members.getByNick(network.get('nick')).get('is_op') : false,
             userbox, menubox;
+
+        // Can only do user related functions if we have an associated network
+        if (!network) {
+            return;
+        }
 
         userbox = new _kiwi.view.UserBox();
         userbox.setTargets(member, this.model);
@@ -478,7 +504,7 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
                 top: t
             });
         }, this))
-        .catch(_.bind(function() {
+        .then(null, _.bind(function() {
             userbox = null;
 
             menu.dispose();
@@ -490,7 +516,7 @@ _kiwi.view.Channel = _kiwi.view.Panel.extend({
     chanClick: function (event) {
         var target = (event.target) ? $(event.target).data('channel') : $(event.srcElement).data('channel');
 
-        _kiwi.app.connections.active_connection.gateway.join(target);
+        this.model.get('network').gateway.join(target);
     },
 
 

@@ -14,435 +14,435 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: POEditor.com\n"
 "Project-Id-Version: Kiwi\n"
-"Language: uk\n"
+"Language: gl\n"
 
 #: client/assets/src/applets/chanlist.js
 msgid "client_applets_chanlist_channelname"
-msgstr "Ім’я каналу"
+msgstr "Nome da canle"
 
 #: 
 msgid "client_applets_chanlist_users"
-msgstr "Користувачі"
+msgstr "Usuarios"
 
 #: 
 msgid "client_applets_chanlist_topic"
-msgstr "Тема"
+msgstr "Tema da canle"
 
 #: 
 msgid "client_applets_chanlist_channellist"
-msgstr "Перелік каналів"
+msgstr "Lista de canles"
 
 #: client/assets/src/applets/scripteditor.js
 msgid "client_applets_scripteditor_save"
-msgstr "Зберегти"
+msgstr "Gardar"
 
 #: 
 msgid "client_applets_scripteditor_error"
-msgstr "Помилка в скрипті. %s"
+msgstr "Erro de script: %s"
 
 #: 
 msgid "client_applets_scripteditor_saved"
-msgstr "Ваш скрипт збережений і активний"
+msgstr "O teu script foi gardado e agora está activo"
 
 #: 
 msgid "client_applets_scripteditor_title"
-msgstr "Редактор скриптів"
+msgstr "Editor de scripts"
 
 #: client/assets/src/applets/settings.js
 msgid "client_applets_settings_channelview_tabs"
-msgstr "Вкладки"
+msgstr "Pestana"
 
 #: 
 msgid "client_applets_settings_channelview_list"
-msgstr "Список"
+msgstr "Lista"
 
 #: 
 msgid "client_applets_settings_channelview_list_notice"
-msgstr "для великої кількості каналів"
+msgstr "para moitas canles"
 
 #: 
 msgid "client_applets_settings_notification_joinpart"
-msgstr "Сповіщення каналу про вхід/вихід"
+msgstr "Notificacións de entrada/salida da canle"
 
 #: 
 msgid "client_applets_settings_timestamp"
-msgstr "Відмітки часу"
+msgstr "Marcas de tempo"
 
 #: 
 msgid "client_applets_settings_notification_sound"
-msgstr "Вимкнути звукові сповіщення"
+msgstr "Silenciar son de notificacións"
 
 #: 
 msgid "client_applets_settings_history_length"
-msgstr "Історія повідомлень при прокручуванні"
+msgstr "Historial de mensaxes por ventá"
 
 #: 
 msgid "client_applets_settings_default_client"
-msgstr "Типовий IRC-клієнт"
+msgstr "Cliente IRC predeterminado"
 
 #: 
 msgid "client_applets_settings_default_client_enable"
-msgstr "Призначити Kiwi типовим IRC-клієнтом"
+msgstr "Facer KiwiIRC o meu cliente IRC predeterminado"
 
 #: 
 msgid "client_applets_settings_locale_restart_needed"
-msgstr "Увага: зміни вступають в силу тільки після того, як Ви оновите сторінку"
+msgstr "Nota: Os cambios terán efecto despois de actualizar a páxina"
 
 #: 
 msgid "client_applets_settings_default_client_notice"
-msgstr "Примітка: користувачам браузера Chrome чи Chromium, можливо, потрібно перевірити їх налаштування через %s, якщо нічого не стається"
+msgstr "Nota: Os usuarios de Chrome ou Chromium quizais teñan que revisar a súa configuración en %s se non acontece nada"
 
 #: 
 msgid "client_applets_settings_title"
-msgstr "Налаштування"
+msgstr "Configuracións"
 
 #: client/assets/src/models/applet.js
 msgid "client_models_applet_unknown"
-msgstr "Невідомий аплет"
+msgstr "Applet desconocida"
 
 #: 
 msgid "client_models_applet_loading"
-msgstr "Завантаження.."
+msgstr "Cargando..."
 
 #: 
 msgid "client_models_applet_notfound"
-msgstr "Не знайдено"
+msgstr "Non encontrado"
 
 #: client/assets/src/models/application.js
 msgid "client_models_application_reconnecting"
-msgstr "Ви були від'єднані. Спроба відновити з'єднання"
+msgstr "Ten sido desconectado. Intentando reconectar"
 
 #: 
 msgid "client_models_application_reconnect_in_x_seconds"
-msgstr "Ви були від'єднані. Спроба відновити з'єднання через %d секунд"
+msgstr "Ten sido desconectado. Intentando reconectar en %d segundos"
 
 #: 
 msgid "client_models_application_reconnect_successfully"
-msgstr "Все добре. Ви знову на зв’язку"
+msgstr "Conexión reestablecida"
 
 #: 
 msgid "client_models_application_settings_saved"
-msgstr "Налаштування збережені"
+msgstr "A configuración foi gardada"
 
 #: 
 msgid "client_models_application_ignore_title"
-msgstr "Ігноровані псевдоніми"
+msgstr "Nicks ignorados"
 
 #: 
 msgid "client_models_application_ignore_none"
-msgstr "Нікого не ігноруємо"
+msgstr "A súa lista de ignorados está valeira"
 
 #: 
 msgid "client_models_application_ignore_nick"
-msgstr "Ігноруємо %s"
+msgstr "Ignorando %s"
 
 #: 
 msgid "client_models_application_ignore_stop_notice"
-msgstr "Вкажіть, який псевдонім ви хочете перестати ігнорувати"
+msgstr "Especifica qué nick queres deixar de ignorar"
 
 #: 
 msgid "client_models_application_ignore_stopped"
-msgstr "Перестали ігнорувати %s"
+msgstr "Deixouse de ignorar a %s"
 
 #: 
 msgid "client_models_application_applet_notfound"
-msgstr "Аплет \"%s\" не знайдено"
+msgstr "O Applet \"%s\" non existe"
 
 #: 
 msgid "client_models_application_encoding_changed"
-msgstr "Кодування змінено на %s"
+msgstr "Codificación modificada a %s"
 
 #: 
 msgid "client_models_application_encoding_invalid"
-msgstr "%s не є правильним кодуванням"
+msgstr "%s non é unha codificación válida"
 
 #: 
 msgid "client_models_application_encoding_notspecified"
-msgstr "Кодування не вказано"
+msgstr "Codificación non especificada"
 
 #: 
 msgid "client_models_application_encoding_usage"
-msgstr "Використовуйте: /encoding [НОВЕ-КОДУВАННЯ]"
+msgstr "Uso: /encoding [NUEVA-CODIFICACIÓN]"
 
 #: 
 msgid "client_models_application_connection_create"
-msgstr "Нове з’єднання"
+msgstr "Nova conexión"
 
 #: 
 msgid "client_models_application_connection_connecting"
-msgstr "Підключення до  %s:%s..."
+msgstr "Conectando a %s:%s..."
 
 #: 
 msgid "client_models_application_connection_error"
-msgstr "Помилка з’єднання до %s:%s (%s)"
+msgstr "Erro conectando a %s:%s (%s)"
 
 #: client/assets/src/models/channel.js
 msgid "client_models_channel_join"
-msgstr "увійшов на канал"
+msgstr "entrou"
 
 #: 
 msgid "client_models_channel_quit"
-msgstr "від’єднався %s"
+msgstr "abandonou %s"
 
 #: 
 msgid "client_models_channel_kicked"
-msgstr "був викинутий %s %s"
+msgstr "foi expulsado por %s %s"
 
 #: 
 msgid "client_models_channel_selfkick"
-msgstr "Ви були викинуті %s %s"
+msgstr "Ten sido expulsado por %s %s"
 
 #: 
 msgid "client_models_channel_part"
-msgstr "вийшов з каналу %s"
+msgstr "saiu de %s"
 
 #: client/assets/src/models/network.js
 msgid "client_models_network_channel_invalid_name"
-msgstr "неправильна назва каналу"
+msgstr "non é un nome de canle válida"
 
 #: 
 msgid "client_models_network_disconnected"
-msgstr "Від’єднаний від IRC-мережі"
+msgstr "Desconectado da red"
 
 #: 
 msgid "client_models_network_nickname_changed"
-msgstr "змінив псевдонім на %s"
+msgstr "cambiou o seu nick a %s"
 
 #: 
 msgid "client_models_network_topic"
-msgstr "Тему змінив %s у %s"
+msgstr "Tema da canle posto por %s ás %s"
 
 #: 
 msgid "client_models_network_selfmode"
-msgstr "встановив мод %s"
+msgstr "puxo modo %s"
 
 #: 
 msgid "client_models_network_mode"
-msgstr "встановили моди %s"
+msgstr "puxo modo %s"
 
 #: 
 msgid "client_models_network_channels"
-msgstr "Канали: %s"
+msgstr "Canles: %s"
 
 #: 
 msgid "client_models_network_server"
-msgstr "Під’єднався до сервера: %s %s"
+msgstr "Conectado ó servidor: %s %s"
 
 #: 
 msgid "client_models_network_idle_and_signon"
-msgstr "мовчить %s, під’єднався %s"
+msgstr "Inactivo fai %s, conectado dende %s"
 
 #: 
 msgid "client_models_network_away"
-msgstr "відсутній: %s"
+msgstr "Inactivo: %s"
 
 #: 
 msgid "client_models_network_idle"
-msgstr "мовчить %s"
+msgstr "Inactivo fai: %s"
 
 #: 
 msgid "client_models_network_nickname_notfound"
-msgstr "Немає такого псевдоніма"
+msgstr "Nick non existe"
 
 #: 
 msgid "client_models_network_banned"
-msgstr "Ви заблоковані на %s. %s"
+msgstr "Fuches baneado de %s. %s"
 
 #: 
 msgid "client_models_network_channel_badkey"
-msgstr "Неправильний ключ для %s"
+msgstr "Contrasinal da canle incorrecta para %s"
 
 #: 
 msgid "client_models_network_channel_inviteonly"
-msgstr "тільки за запрошенням."
+msgstr "é só para convidados."
 
 #: 
 msgid "client_models_network_channel_limitreached"
-msgstr "повний."
+msgstr "está cheo."
 
 #: 
 msgid "client_models_network_nickname_alreadyinuse"
-msgstr "Псевдонім %s вже використовується. Оберіть будь ласка інший"
+msgstr "O nick \"%s\" xa está en uso. Escolle outro distinto"
 
 #: 
 msgid "client_models_network_badpassword"
-msgstr "Отриманий пароль неправильний"
+msgstr "Contrasinal incorrecta"
 
 #: client/assets/src/views/application.js
 msgid "client_views_application_close_notice"
-msgstr "Це призведе до закриття всіх вікон KiwiIRC. Ви впевнені, що бажаєте закрити дане вікно?"
+msgstr "Isto pechaá todas as conexións. Estás seguro de que queres pechar KiwiIRC?"
 
 #: client/assets/src/views/channel.js
 msgid "client_views_channel_joining"
-msgstr "Вхід на канал.."
+msgstr "Entrando á canle..."
 
 #: 
 msgid "client_views_channel_topic"
-msgstr "Тема %s: %s"
+msgstr "Tema da canle %s é: %s"
 
 #: client/assets/src/views/mediamessage.js
 msgid "client_views_mediamessage_close"
-msgstr "Закрити медіа"
+msgstr "Pechar"
 
 #: 
 msgid "client_views_mediamessage_notfound"
-msgstr "Не знайдено"
+msgstr "Non encontrado"
 
 #: 
 msgid "client_views_mediamessage_load_tweet"
-msgstr "Завантаження твіту"
+msgstr "Cargando Tweet"
 
 #: 
 msgid "client_views_mediamessage_load_image"
-msgstr "Завантаження зображення"
+msgstr "Cargando imaxe"
 
 #: 
 msgid "client_views_mediamessage_load_reddit"
-msgstr "Завантаження Reddit повідомлення"
+msgstr "Cargando Reddit"
 
 #: 
 msgid "client_views_mediamessage_load_gist"
-msgstr "Завантаження gist"
+msgstr "Cargando Gist"
 
 #: client/assets/src/views/nickchangegbox.js
 msgid "client_views_nickchangebox_new"
-msgstr "Новий псевдонім"
+msgstr "Novo nick"
 
 #: 
 msgid "client_views_nickchangebox_change"
-msgstr "Змінити"
+msgstr "Cambiar"
 
 #: 
 msgid "client_views_nickchangebox_cancel"
-msgstr "Скасувати"
+msgstr "Cancelar"
 
 #: client/assets/src/views/panel.js
 msgid "client_views_panel_activity"
-msgstr "Люди говорять!"
+msgstr "Xente falando!"
 
 #: client/assets/src/views/serverselect.js
 msgid "client_views_serverselect_form_title"
-msgstr "Подумайте про псевдонім..."
+msgstr "Elixe un nick..."
 
 #: 
 msgid "client_views_serverselect_nickname"
-msgstr "Псевдонім"
+msgstr "Nick"
 
 #: 
 msgid "client_views_serverselect_enable_password"
-msgstr "У мене є пароль"
+msgstr "Teño un contrasinal"
 
 #: 
 msgid "client_views_serverselect_password"
-msgstr "Пароль"
+msgstr "Contrasinal"
 
 #: 
 msgid "client_views_serverselect_channel"
-msgstr "Канал"
+msgstr "Canle"
 
 #: 
 msgid "client_views_serverselect_channelkey"
-msgstr "Ключ каналу"
+msgstr "Contrasinal da canle"
 
 #: 
 msgid "client_views_serverselect_channelkey_required"
-msgstr "Для входу на канал необхідний ключ"
+msgstr "Canle require un contrasinal"
 
 #: 
 msgid "client_views_serverselect_key"
-msgstr "Ключ"
+msgstr "Contrasinal"
 
 #: 
 msgid "client_views_serverselect_connection_start"
-msgstr "З’єднання..."
+msgstr "Conectando..."
 
 #: 
 msgid "client_views_serverselect_server_and_network"
-msgstr "Сервер і мережа"
+msgstr "Servidor e rede"
 
 #: 
 msgid "client_views_serverselect_server"
-msgstr "Сервер"
+msgstr "Servidor"
 
 #: 
 msgid "client_views_serverselect_port"
-msgstr "Порт"
+msgstr "Porto"
 
 #: 
 msgid "client_views_serverselect_poweredby"
-msgstr "Працює на Kiwi IRC"
+msgstr "Funciona con KiwiIRC"
 
 #: 
 msgid "client_views_serverselect_nickname_error_empty"
-msgstr "Спочатку оберіть псевдонім!"
+msgstr "Debes elixir un nick primeiro"
 
 #: 
 msgid "client_views_serverselect_connection_successfully"
-msgstr "З’єднано"
+msgstr "Conectado"
 
 #: 
 msgid "client_views_serverselect_connection_trying"
-msgstr "З’єнуюсь.."
+msgstr "Conectando..."
 
 #: 
 msgid "client_views_serverselect_nickname_error_alreadyinuse"
-msgstr "Псевдонім вже використовується"
+msgstr "Nick xa está en uso"
 
 #: 
 msgid "client_views_serverselect_nickname_invalid"
-msgstr "Неправильний псевдонім"
+msgstr "Nick inválido"
 
 #: 
 msgid "client_views_serverselect_password_incorrect"
-msgstr "Неправильний пароль"
+msgstr "Contrasinal incorrecto"
 
 #: 
 msgid "client_views_serverselect_connection_error"
-msgstr "Помилка з’єднання"
+msgstr "Erró ó conectar"
 
 #: 
 msgid "client_views_serverselect_server_notfound"
-msgstr "Сервер не знайдено"
+msgstr "Servidor non encontrado"
 
 #: 
 msgid "client_views_serverselect_connection_refused"
-msgstr "У з’єднанні відмовлено"
+msgstr "Conexión denegada"
 
 #: client/assets/src/views/userbox.js
 msgid "client_views_userbox_op"
-msgstr "Оп"
+msgstr "Dar op"
 
 #: 
 msgid "client_views_userbox_deop"
-msgstr "Де-оп"
+msgstr "Quitar op"
 
 #: 
 msgid "client_views_userbox_voice"
-msgstr "Войс"
+msgstr "Dar voz"
 
 #: 
 msgid "client_views_userbox_devoice"
-msgstr "Де-войс"
+msgstr "Quitar voz"
 
 #: 
 msgid "client_views_userbox_kick"
-msgstr "Кік"
+msgstr "Expulsar"
 
 #: 
 msgid "client_views_userbox_ban"
-msgstr "Бан"
+msgstr "Banear"
 
 #: 
 msgid "client_views_userbox_query"
-msgstr "Повідомлення"
+msgstr "Mensaxe"
 
 #: 
 msgid "client_views_userbox_whois"
-msgstr "Інформація"
+msgstr "Info"
 
 #: 
 msgid "client_views_userbox_slap"
-msgstr "Шльоп!"
+msgstr "Labazada!"
 
 #: 
 msgid "client_views_serverselect_ssl"
@@ -450,71 +450,71 @@ msgstr "SSL"
 
 #: 
 msgid "client_models_application_jumpserver_prepare"
-msgstr "Через 5 хвилин вас буде повторно під'єднано і приєднано до ваших каналів. Будьте готові!"
+msgstr "En 5 minutos serás reconectado e entrarás automaticamente as tuas canles. Prepárate!"
 
 #: 
 msgid "client_models_application_jumpserver_reconnect"
-msgstr "Безпечне з’єднання.."
+msgstr "Reconectando..."
 
 #: 
 msgid "client_applets_settings_html5_notifications"
-msgstr "Сповіщення на робочому столі"
+msgstr "Activar notificacións de escritorio HTML5"
 
 #: 
 msgid "client_applets_settings_enable_notifications"
-msgstr "Увімкнути сповіщення"
+msgstr "Activar notificacións"
 
 #: 
 msgid "client_applets_settings_emoticons"
-msgstr "Показати посмішки"
+msgstr "Mostrar emoticonas"
 
 #: 
 msgid "client_applet_about"
-msgstr "Про Kiwi"
+msgstr "Acerca de KiwiIRC"
 
 #: 
 msgid "client_applet_about_homepage"
-msgstr "Домашня сторінка проекту"
+msgstr "Páxina principal do proxecto"
 
 #: 
 msgid "client_applet_about_link_channel"
-msgstr "Посилання на цей канал"
+msgstr "Enlace a esta canle"
 
 #: 
 msgid "client_applet_about_share_channel"
-msgstr "Поширити цей канал"
+msgstr "Compartir esta canle"
 
 #: 
 msgid "client_applet_fav_my_networks"
-msgstr "Мої мережі"
+msgstr "As miñas redes"
 
 #: 
 msgid "client_applet_fav_networks"
-msgstr "Обрані мережі"
+msgstr "Redes favoritas"
 
 #: 
 msgid "client_applet_fav_add"
-msgstr "Додати мережу"
+msgstr "Agregar rede"
 
 #: 
 msgid "client_applet_fav_save"
-msgstr "Зберегти мережу"
+msgstr "Gardar rede"
 
 #: 
 msgid "client_applet_fav_delete"
-msgstr "Видалити мережу"
+msgstr "Eliminar rede"
 
 #: 
 msgid "client_applets_settings_notification_count_all_activity"
-msgstr "Включити повідомлення входу/виходу"
+msgstr "Incluir mensaxes de entrada/salida da canle"
 
 #: 
 msgid "client_views_userbox_ignore"
-msgstr "Ігнорувати"
+msgstr "Ignorar"
 
 #: 
 msgid "client_applets_settings_timestamp_24_hour"
-msgstr "Використовувати 24-годинний формат часу"
+msgstr "Usar horario de 24-horas"
 
 #: 
 msgid "client_views_panel_timestamp_am"
@@ -526,349 +526,349 @@ msgstr "%s PM"
 
 #: 
 msgid "client_models_application_has_been_invited"
-msgstr "був запрошений до %s"
+msgstr "fuches invitado a %s"
 
 #: 
 msgid "client_models_network_channel_alreadyin"
-msgstr "вже на цьому каналі"
+msgstr "xa está nesta canle"
 
 #: Date format
 msgid "client_date_format"
-msgstr "м/д/р"
+msgstr "d/m/Y"
 
 #: client.libs.date_format.shortMonths.January
 msgid "client.libs.date_format.short_months.january"
-msgstr "Січ"
+msgstr "Xan"
 
 #: client.libs.date_format.shortMonths.february
 msgid "client.libs.date_format.short_months.february"
-msgstr "Лют"
+msgstr "Feb"
 
 #: client.libs.date_format.shortMonths.march
 msgid "client.libs.date_format.short_months.march"
-msgstr "Бер"
+msgstr "Mar"
 
 #: client.libs.date_format.shortMonths.april
 msgid "client.libs.date_format.short_months.april"
-msgstr "Кві"
+msgstr "Abr"
 
 #: client.libs.date_format.shortMonths.may
 msgid "client.libs.date_format.short_months.may"
-msgstr "Тра"
+msgstr "Mai"
 
 #: client.libs.date_format.shortMonths.june
 msgid "client.libs.date_format.short_months.june"
-msgstr "Чер"
+msgstr "Xun"
 
 #: client.libs.date_format.shortMonths.july
 msgid "client.libs.date_format.short_months.july"
-msgstr "Лип"
+msgstr "Xul"
 
 #: client.libs.date_format.shortMonths.august
 msgid "client.libs.date_format.short_months.august"
-msgstr "Сер"
+msgstr "Ago"
 
 #: client.libs.date_format.shortMonths.september
 msgid "client.libs.date_format.short_months.september"
-msgstr "Вер"
+msgstr "Set"
 
 #: client.libs.date_format.shortMonths.october
 msgid "client.libs.date_format.short_months.october"
-msgstr "Жов"
+msgstr "Out"
 
 #: client.libs.date_format.shortMonths.november
 msgid "client.libs.date_format.short_months.november"
-msgstr "Лис"
+msgstr "Nov"
 
 #: client.libs.date_format.shortMonths.december
 msgid "client.libs.date_format.short_months.december"
-msgstr "Гру"
+msgstr "Dec"
 
 #: client.libs.date_format.longMonts.January
 msgid "client.libs.date_format.long_months.january"
-msgstr "Січень"
+msgstr "Xaneiro"
 
 #: client.libs.date_format.longMonts.february
 msgid "client.libs.date_format.long_months.february"
-msgstr "Лютий"
+msgstr "Febreiro"
 
 #: client.libs.date_format.longMonts.march
 msgid "client.libs.date_format.long_months.march"
-msgstr "Березень"
+msgstr "Marzo"
 
 #: client.libs.date_format.longMonts.april
 msgid "client.libs.date_format.long_months.april"
-msgstr "Квітень"
+msgstr "Abril"
 
 #: client.libs.date_format.longMonts.may
 msgid "client.libs.date_format.long_months.may"
-msgstr "Травень"
+msgstr "Maio"
 
 #: client.libs.date_format.longMonts.june
 msgid "client.libs.date_format.long_months.june"
-msgstr "Червень"
+msgstr "Juño"
 
 #: client.libs.date_format.longMonts.july
 msgid "client.libs.date_format.long_months.july"
-msgstr "Липень"
+msgstr "Jullo"
 
 #: client.libs.date_format.longMonts.august
 msgid "client.libs.date_format.long_months.august"
-msgstr "Серпень"
+msgstr "Agosto"
 
 #: client.libs.date_format.longMonts.september
 msgid "client.libs.date_format.long_months.september"
-msgstr "Вересень"
+msgstr "Setembro"
 
 #: client.libs.date_format.longMonths.october
 msgid "client.libs.date_format.long_months.october"
-msgstr "Жовтень"
+msgstr "Outubro"
 
 #: client.libs.date_format.longMonths.november
 msgid "client.libs.date_format.long_months.november"
-msgstr "Листопад"
+msgstr "Novembro"
 
 #: client.libs.date_format.longMonths.december
 msgid "client.libs.date_format.long_months.december"
-msgstr "Грудень"
+msgstr "Decembro"
 
 #: client.libs.date_format.shortDays.monday
 msgid "client.libs.date_format.short_days.monday"
-msgstr "ПН"
+msgstr "Lun"
 
 #: client.libs.date_format.shortDays.tuesday
 msgid "client.libs.date_format.short_days.tuesday"
-msgstr "ВТ"
+msgstr "Mar"
 
 #: client.libs.date_format.shortDays.wednesday
 msgid "client.libs.date_format.short_days.wednesday"
-msgstr "СР"
+msgstr "Mér"
 
 #: client.libs.date_format.shortDays.thursday
 msgid "client.libs.date_format.short_days.thursday"
-msgstr "ЧТ"
+msgstr "Xov"
 
 #: client.libs.date_format.shortDays.friday
 msgid "client.libs.date_format.short_days.friday"
-msgstr "ПТ"
+msgstr "Ven"
 
 #: client.libs.date_format.shortDays.saturday
 msgid "client.libs.date_format.short_days.saturday"
-msgstr "СБ"
+msgstr "Sáb"
 
 #: client.libs.date_format.shortDays.sunday
 msgid "client.libs.date_format.short_days.sunday"
-msgstr "НД"
+msgstr "Dom"
 
 #: client.libs.date_format.longDays.monday
 msgid "client.libs.date_format.long_days.monday"
-msgstr "Понеділок"
+msgstr "Luns"
 
 #: client.libs.date_format.longDays.tuesday
 msgid "client.libs.date_format.long_days.tuesday"
-msgstr "Вівторок"
+msgstr "Martes"
 
 #: client.libs.date_format.longDays.wednesday
 msgid "client.libs.date_format.long_days.wednesday"
-msgstr "Середа"
+msgstr "Mércores"
 
 #: client.libs.date_format.longDays.thursday
 msgid "client.libs.date_format.long_days.thursday"
-msgstr "Четвер"
+msgstr "Xoves"
 
 #: client.libs.date_format.longDays.friday
 msgid "client.libs.date_format.long_days.friday"
-msgstr "П'ятниця"
+msgstr "Vernes"
 
 #: client.libs.date_format.longDays.saturday
 msgid "client.libs.date_format.long_days.saturday"
-msgstr "Субота"
+msgstr "Sábado"
 
 #: client.libs.date_format.longDays.sunday
 msgid "client.libs.date_format.long_days.sunday"
-msgstr "Неділя"
+msgstr "Domingo"
 
 #: 
 msgid "client_views_channelinfo_moderated"
-msgstr "Модерований чат"
+msgstr "Chat moderado"
 
 #: 
 msgid "client_views_channelinfo_inviteonly"
-msgstr "Лише за запрошенням"
+msgstr "Só convidados"
 
 #: 
 msgid "client_views_channelinfo_opschangechannel"
-msgstr "Лише оператори можуть змінювати тему"
+msgstr "Só operadores poden cambiar o tema da canle"
 
 #: 
 msgid "client_views_channelinfo_externalmessages"
-msgstr "Блокувати повідомлення з поза меж каналу"
+msgstr "Bloquear mensaxes dende outras canles"
 
 #: 
 msgid "client_views_channelinfo_togglebanlist"
-msgstr "Перемкнути список банів"
+msgstr "Alternar lista de Ban"
 
 #: 
 msgid "client_views_controlbox_message"
-msgstr "Надіслати повідомлення..."
+msgstr "Enviar mensaxe..."
 
 #: 
 msgid "disconnect_from_server"
-msgstr "Це призведе до від'єднання від мережі IRC. Ви впевнені?"
+msgstr "Isto desconectarate da rede IRC. Estás seguro?"
 
 #: 
 msgid "client_applets_settings_custom_highlights"
-msgstr "Власні підсвічування (розділені пробілом)"
+msgstr "Resaltados personalizados (separados por espazos)"
 
 #: client/assets/src/applets/settings.js
 msgid "client_applets_settings_messages"
-msgstr "Повідомлення"
+msgstr "Mensaxes"
 
 #: client/assets/src/applets/settings.js
 msgid "client_applets_settings_chat_messages"
-msgstr "Повідомлення чату"
+msgstr "Mensaxes de Chat"
 
 #: client/assets/src/applets/settings.js
 msgid "client_applets_settings_alerts_notifications"
-msgstr "Попередження / Сповіщення"
+msgstr "Alertas / Notificacións"
 
 #: client/assets/src/applets/settings.js
 msgid "client_applets_settings_appearance"
-msgstr "Вигляд"
+msgstr "Aparencia"
 
 #: client/assets/src/applets/settings.js
 msgid "client_applets_settings_theme"
-msgstr "Тема"
+msgstr "Tema"
 
 #: client/assets/src/applets/settings.js
 msgid "client_applets_settings_channels"
-msgstr "Канали"
+msgstr "Canles"
 
 #: 
 msgid "client_applets_settings_language"
-msgstr "Мова"
+msgstr "Idioma"
 
 #: 
 msgid "client_applets_settings_ignore_new_queries"
-msgstr "Блокувати нові приватні повідомлення"
+msgstr "Bloquear novas mensaxes privadas"
 
 #: 
 msgid "command_description_msg"
-msgstr "Надіслати повідомлення"
+msgstr "Enviar unha mensaxe"
 
 #: 
 msgid "command_description_action"
-msgstr "Зробити щось"
+msgstr "Facer algo físico"
 
 #: 
 msgid "command_description_join"
-msgstr "Приєднатися до каналу"
+msgstr "Unirse a unha canle"
 
 #: 
 msgid "command_description_part"
-msgstr "Покинути канал"
+msgstr "Deixar unha canle"
 
 #: 
 msgid "command_description_cycle"
-msgstr "Покинути, а потім знову приєднатися до каналу"
+msgstr "Deixar, e logo volver unirse a unha canle"
 
 #: 
 msgid "command_description_nick"
-msgstr "Змінити псевдонім"
+msgstr "Cambiar o teu nick"
 
 #: 
 msgid "command_description_query"
-msgstr "Надіслати комусь приватне повідомлення"
+msgstr "Iniciar unha conversa privada con alguén"
 
 #: 
 msgid "command_description_invite"
-msgstr "Запросити когось до каналу"
+msgstr "Ivitar a algué a unha canle"
 
 #: 
 msgid "command_description_topic"
-msgstr "Встановити тему для цього каналу"
+msgstr "Establecer o tema nesta canle"
 
 #: 
 msgid "command_description_notice"
-msgstr "Надіслати зауваження"
+msgstr "Enviar un aviso"
 
 #: 
 msgid "command_description_quote"
-msgstr "Надіслати сиру команду на сервер IRC"
+msgstr "Enviar un comando directo o servidor IRC"
 
 #: 
 msgid "command_description_kick"
-msgstr "Штурхнути когось на каналі"
+msgstr "Patear a alguén da canle"
 
 #: 
 msgid "command_description_clear"
-msgstr "Стерти всі повідомлення з цього вікна"
+msgstr "Limpar todas as menxaxes desta ventá"
 
 #: 
 msgid "command_description_ctcp"
-msgstr "Надіслати комусь команду CTCP"
+msgstr "Enviar un comando CTCP a alguén"
 
 #: 
 msgid "command_description_quit"
-msgstr "Від'єднатися від сервера IRC"
+msgstr "Desconectar do servidor IRC"
 
 #: 
 msgid "command_description_server"
-msgstr "З'єднатися з новою мережею IRC"
+msgstr "Conectar a unha nova rede IRC"
 
 #: 
 msgid "command_description_whois"
-msgstr "Запит інформації про когось"
+msgstr "Pedir información sobre alguén"
 
 #: 
 msgid "command_description_whowas"
-msgstr "Запит інформації про когось, хто недавно від'єднався"
+msgstr "Pedir información sobre alguen que se desconectou recentemente"
 
 #: 
 msgid "command_description_away"
-msgstr "Позначити себе недоступним"
+msgstr "Marcarse como fora"
 
 #: 
 msgid "command_description_encoding"
-msgstr "Змінити кодування свого з'єднання"
+msgstr "Cambia a codificación da tua conexión"
 
 #: 
 msgid "command_description_settings"
-msgstr "Показати вікно налаштувань"
+msgstr "Mostrar a ventáde configuración"
 
 #: 
 msgid "command_description_script"
-msgstr "Змінити скрипти користувача kiwi"
+msgstr "Modificar scripts de usuario kiwi"
 
 #: 
 msgid "command_description_css"
-msgstr "Перезавантажити оформлення сторінки"
+msgstr "Recargar a folla de estilos CSS"
 
 #: 
 msgid "command_description_js"
-msgstr "Завантажити файл javascript з URL"
+msgstr "Carga un ficheiro javascript dende unha URL"
 
 #: 
 msgid "command_description_set"
-msgstr "Встановити налаштування kiwi config"
+msgstr "Establece a configuración de preferencias de kiwi"
 
 #: 
 msgid "command_description_save"
-msgstr "Зберегти поточні налаштування kiwi"
+msgstr "Grava a configuración actual de kiwi"
 
 #: 
 msgid "command_description_alias"
-msgstr "Створити псевдонім до наявного /command"
+msgstr "Crea un alias a un /command existente"
 
 #: 
 msgid "command_description_ignore"
-msgstr "Ігнорувати повідомлення від когось"
+msgstr "Ignora as mensaxes de alguén"
 
 #: 
 msgid "command_description_unignore"
-msgstr "Припинити ігнорувати когось"
+msgstr "Para de ingorar a alguén"
 
 #: 
 msgid "client_applets_settings_autocomplete_slideout"
-msgstr "Показувати поле автозавершення"
+msgstr "Mostra a caixa de autocompletado"
 

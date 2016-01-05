@@ -1,4 +1,5 @@
 {
+    "sq": "Albanian",
     "bs": "Bosnian",
     "ca": "Catalan",
     "cs": "Čeština",
@@ -7,6 +8,8 @@
     "es": "Español",
     "es-419": "Español (Latino America)",
     "fr": "Français",
+    "gl": "Galego",
+    "el": "Greek",
     "he": "Hebrew",
     "it": "Italiano",
     "ko-kr": "Korean",
@@ -16,7 +19,7 @@
     "pl": "Polski",
     "pt-br": "Português (Brasil)",
     "ro": "Română",
-    "ru": "русский",
+    "ru": "Русский",
     "sr": "Srpski",
     "tr": "Türkçe",
     "uk": "Українська",

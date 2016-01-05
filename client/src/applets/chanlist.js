@@ -15,7 +15,7 @@
                 users: _kiwi.global.i18n.translate('client_applets_chanlist_users').fetch(),
                 topic: _kiwi.global.i18n.translate('client_applets_chanlist_topic').fetch()
             };
-            this.$el = $(_.template($('#tmpl_channel_list').html().trim(), text));
+            this.$el = $(_.template($('#tmpl_channel_list').html().trim())(text));
 
             this.channels = [];
 
@@ -71,6 +71,14 @@
             }
 
             table[0].appendChild(tbody[0]);
+        },
+
+
+        reset: function() {
+            this.$('tbody').empty();
+            this.channels = [];
+            this.order = '';
+            this.waiting = false;
         },
 
 
@@ -159,7 +167,7 @@
 
         // A new, fresh channel list starting
         onListStart: function (event) {
-            // TODO: clear out our existing list
+            this.view.reset();
         },
 
         addChannel: function (channels) {

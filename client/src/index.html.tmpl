@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="referrer" content="origin-when-crossorigin">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <base target="_blank">
 
@@ -273,6 +274,18 @@
                                 <%= emoticons %>
                             </label>
                         </div>
+                        <div class="checkbox">
+                            <label>
+                                <input data-setting="ignore_new_queries" type="checkbox">
+                                <%= queries %>
+                            </label>
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                <input data-setting="show_autocomplete_slideout" type="checkbox">
+                                <%= autocomplete_slideout %>
+                            </label>
+                        </div>
                         <div>
                             <label>
                                 <input data-setting="scrollback" class="input-small" type="text" size="4" pattern="\d*">
@@ -341,6 +354,10 @@
                                 <%= list %><small class="text-muted">(<%= large_amounts_of_chans %>)</small>
                             </label>
                         </div>
+                        <label>
+                            <input data-setting="scrollback" class="input-small" type="text" size="4" pattern="\d*">
+                            <span><%= scroll_history %></span>
+                        </label>
                     </div>
                 </section>
 
@@ -561,13 +578,13 @@
                 // Load themes
                 if (opts.themes) {
                     $.each(opts.themes, function (theme_idx, theme) {
-                        var disabled = (opts.server_settings.client.settings.theme.toLowerCase() !== theme.name.toLowerCase()),
-                            rel = (disabled?'alternate ':'') + 'stylesheet';
-
-                        var link = $.parseHTML('<link rel="' + rel + '" type="text/css" data-theme href="'+ opts.base_path + '/assets/themes/' + theme.name.toLowerCase() + '/style.css" title="' + theme.name.toLowerCase() + '" ' + (disabled?'disabled':'') + '/>');
-                        link.disabled = disabled;
-
+                        var disabled = (opts.server_settings.client.settings.theme.toLowerCase() !== theme.name.toLowerCase());
+                        var link = $.parseHTML('<link rel="stylesheet" type="text/css" data-theme href="'+ opts.base_path + '/assets/themes/' + theme.name.toLowerCase() + '/style.css" title="' + theme.name.toLowerCase() + '" />');
+                        
                         $(link).appendTo($('head'));
+                        if (disabled) {
+                            link.disabled = disabled;
+                        }
                     });
                 }
             });

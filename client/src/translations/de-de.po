@@ -718,5 +718,158 @@ msgstr "Dies wird dich vom IRC-Netzwerk trennen. Bist du sicher?"
 
 #: 
 msgid "client_applets_settings_custom_highlights"
-msgstr "Custom highlights (space separated)"
+msgstr "Highlights (getrennt durch Leerzeichen)"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_messages"
+msgstr "Nachrichten"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_chat_messages"
+msgstr "Chat Nachrichten"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_alerts_notifications"
+msgstr "Hinweise / Benachrichtigungen"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_appearance"
+msgstr "Erscheinungsbild"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_theme"
+msgstr "Thema"
+
+#: client/assets/src/applets/settings.js
+msgid "client_applets_settings_channels"
+msgstr "Räume"
+
+#: 
+msgid "client_applets_settings_language"
+msgstr "Sprache"
+
+#: 
+msgid "client_applets_settings_ignore_new_queries"
+msgstr "Neue private Nachrichten blockieren"
+
+#: 
+msgid "command_description_msg"
+msgstr "Sende eine Nachricht"
+
+#: 
+msgid "command_description_action"
+msgstr "Mache etwas physisches"
+
+#: 
+msgid "command_description_join"
+msgstr "Betrete einen Raum"
+
+#: 
+msgid "command_description_part"
+msgstr "Verlasse einen Raum"
+
+#: 
+msgid "command_description_cycle"
+msgstr "Verlasse und betrete einen Raum erneut"
+
+#: 
+msgid "command_description_nick"
+msgstr "Ändere deinen Nicknamen"
+
+#. Wouldn't "Start a private *conversation* with someone" be better / more accurate in the original text?
+#: 
+msgid "command_description_query"
+msgstr "Beginne eine private Konversation mit jemandem"
+
+#: 
+msgid "command_description_invite"
+msgstr "Lade jemanden in den Raum ein"
+
+#: 
+msgid "command_description_topic"
+msgstr "Setze ein Thema für diesen Raum"
+
+#: 
+msgid "command_description_notice"
+msgstr "Sende eine Notiz"
+
+#: 
+msgid "command_description_quote"
+msgstr "Sende einen Befehl direkt an den Server"
+
+#: 
+msgid "command_description_kick"
+msgstr "Kicke jemanden aus dem Raum"
+
+#: 
+msgid "command_description_clear"
+msgstr "Entferne alle Nachrichten aus diesem Fenster"
+
+#: 
+msgid "command_description_ctcp"
+msgstr "Sende einen CTCP Befehl an jemanden"
+
+#: 
+msgid "command_description_quit"
+msgstr "Verbindung zum IRC Server trennen"
+
+#: 
+msgid "command_description_server"
+msgstr "Verbindung zu einem neuen IRC Netzwerk herstellen"
+
+#: 
+msgid "command_description_whois"
+msgstr "Fordere Informationen über jemanden an"
+
+#: 
+msgid "command_description_whowas"
+msgstr "Fordere Informationen über jemanden der kürzlich die Verbindung getrennt hat an"
+
+#: 
+msgid "command_description_away"
+msgstr "Markiere dich selbst als abwesend"
+
+#: 
+msgid "command_description_encoding"
+msgstr "Verändere deine Verbindungscodierung"
+
+#: 
+msgid "command_description_settings"
+msgstr "Zeige das Einstellungsfenster"
+
+#: 
+msgid "command_description_script"
+msgstr "Verändere Kiwi-Benutzerscripts"
+
+#: 
+msgid "command_description_css"
+msgstr "Lade die Stylesheets der Seite neu"
+
+#: 
+msgid "command_description_js"
+msgstr "Lade eine Javascript Datei von einer URL"
+
+#: 
+msgid "command_description_set"
+msgstr "Stelle eine Kiwi-Konfigurationsoption ein"
+
+#: 
+msgid "command_description_save"
+msgstr "Speichere die aktuellen Kiwi-Einstellungen"
+
+#: 
+msgid "command_description_alias"
+msgstr "Erstelle einen Alias für einen bestehenden /Befehl"
+
+#: 
+msgid "command_description_ignore"
+msgstr "Ignoriere alle Nachrichten von jemanden"
+
+#: 
+msgid "command_description_unignore"
+msgstr "Ignoriere jemanden nicht mehr"
+
+#: 
+msgid "client_applets_settings_autocomplete_slideout"
+msgstr "Zeige die Autocomplete Box"
 

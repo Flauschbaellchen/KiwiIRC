@@ -150,6 +150,24 @@ _kiwi.global = {
                 return network.createQuery(nick);
             };
 
+            obj.ignoreMask = function(mask) {
+                var network = getNetwork();
+                if (!network) {
+                    return;
+                }
+
+                return network.ignore_list.addMask(mask);
+            };
+
+            obj.unignoreMask = function(mask) {
+                var network = getNetwork();
+                if (!network) {
+                    return;
+                }
+
+                return network.ignore_list.removeMask(mask);
+            };
+
             // Add the networks getters/setters
             obj.get = function(name) {
                 var network, restricted_keys;
@@ -417,7 +435,7 @@ _kiwi.global = {
         }
 
         // Set any random numbers if needed
-        defaults.nick = defaults.nick.replace('?', Math.floor(Math.random() * 100000).toString());
+        defaults.nick = defaults.nick.replace(/\?/g, Math.floor(Math.random() * 100000).toString());
 
         if (getQueryVariable('encoding'))
             defaults.encoding = getQueryVariable('encoding');

@@ -105,7 +105,40 @@ _kiwi.view.ControlBox = Backbone.View.extend({
         });
 
         this.listenTo(this.autocomplete, 'action-more', function(nick) {
-            console.log('Not implimented: Show user box');
+            var active_panel = _kiwi.app.panels().active,
+                members = active_panel.get('members'),
+                member = members.getByNick(nick),
+                userbox,
+                are_we_an_op = !!members.getByNick(_kiwi.app.connections.active_connection.get('nick')).get('is_op');
+
+            userbox = new _kiwi.view.UserBox();
+            userbox.setTargets(member, active_panel);
+            userbox.displayOpItems(are_we_an_op);
+
+            var menu = new _kiwi.view.MenuBox(member.get('nick') || 'User');
+            menu.addItem('userbox', userbox.$el);
+            menu.showFooter(false);
+
+            _kiwi.global.events.emit('usermenu:created', {menu: menu, userbox: userbox, user: member})
+            .then(_.bind(function() {
+                menu.show();
+
+                var t = _kiwi.app.view.$el.height() - this.autocomplete.$el.outerHeight() - menu.$el.outerHeight();
+                var l = _kiwi.app.view.$el.width() - menu.$el.outerWidth();
+
+                // Set the new positon
+                menu.$el.offset({
+                    left: l,
+                    top: t
+                });
+
+            }, this))
+            .then(null, _.bind(function() {
+                userbox = null;
+
+                menu.dispose();
+                menu = null;
+            }, this));
         });
     },
 
@@ -196,7 +229,11 @@ _kiwi.view.ControlBox = Backbone.View.extend({
 
             if (inp_val) {
                 $.each(inp_val.split('\n'), function (idx, line) {
-                    that.processInput(line);
+                    try {
+                        that.processInput(line);
+                    } catch (err) {
+                        window.console && console.error(err);
+                    }
                 });
 
                 this.buffer.push(inp_val);
@@ -204,6 +241,13 @@ _kiwi.view.ControlBox = Backbone.View.extend({
             }
 
             inp.val('');
+
+            // The auto complete may not have thrown a match if it was empty, so
+            // just make sure it's closed
+            if (this.autocomplete.open) {
+                this.autocomplete.close();
+            }
+
             return false;
 
             break;
@@ -305,12 +349,13 @@ _kiwi.view.ControlBox = Backbone.View.extend({
 
 
     setAutoCompleteCommands: function(commands) {
-        _.each(commands, function(description, command) {
+        _.each(commands, function(command) {
             this.autocomplete_command_list.push({
-                match: [command],
-                description: description
+                match: command.matches || [],
+                description: command.description
             });
         }, this);
+
         /*
         var command_list = [
             {match: ['/join'], description: 'Join or start a channel'},
@@ -400,6 +445,7 @@ _kiwi.view.ControlBox = Backbone.View.extend({
             caret_pos: $inp[0].selectionStart
         };
 
+        this.autocomplete.showUi(!!_kiwi.global.settings.get('show_autocomplete_slideout'));
         this.autocomplete.setTitle(type);
         this.autocomplete.setWords(list, filter_list);
         this.autocomplete.update(tokens[tokens.length - 1]);
